@@ -92,7 +92,7 @@ fun ExpeditionsListView(viewModel: GameViewModel, closeEvent: () -> Unit) {
                     Spacer(modifier = Modifier.padding(vertical = 5.dp))
                     if (isHeroLoaded == true) {
                         if (heroInfo != null)
-                            ContentRow(heroInfo!!.expeditions, heroInfo!!.total_progress)
+                            ContentRow(heroInfo?.expeditions, heroInfo?.total_progress)
                     }
                     else {
                         LoadingView(true)
@@ -145,18 +145,27 @@ private fun ContentHeadingRow(expeditionsCompleted: Int?) {
 }
 
 @Composable
-private fun ContentRow(expeditions: List<ExpeditionModel>, totalProgress: Int?) {
+private fun ContentRow(expeditions: List<ExpeditionModel>?, totalProgress: Int?) {
     val scrollState = rememberLazyListState()
-    val progress = totalProgress?.div(expeditions.size)
-    LazyColumn(state = scrollState) {
-        items(items = expeditions) { expedition ->
-            ExpeditionCard(
-                index = expedition.number,
-                result = expedition.result,
-                name = expedition.name ?: "[ДАННЫЕ УДАЛЕНЫ]",
-                coins = expedition.rsp,
-                experience = expedition.exp,
-                progress = progress ?: 0)
+    if (expeditions == null) {
+        Text(
+            text = "ЖУРНАЛ ПОКА ПУСТ",
+            style = MaterialTheme.typography.h2,
+            color = Color.White,
+        )
+    }
+    else {
+        val progress = totalProgress?.div(expeditions.size)
+        LazyColumn(state = scrollState) {
+            items(items = expeditions) { expedition ->
+                ExpeditionCard(
+                    index = expedition.number,
+                    result = expedition.result,
+                    name = expedition.name ?: "[ДАННЫЕ УДАЛЕНЫ]",
+                    coins = expedition.rsp,
+                    experience = expedition.exp,
+                    progress = progress ?: 0)
+            }
         }
     }
 }
