@@ -4,8 +4,6 @@ import android.annotation.SuppressLint
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -17,10 +15,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
@@ -50,8 +46,6 @@ import com.goodgame.goodgameapp.screens.views.ErrorAlert
 import com.goodgame.goodgameapp.screens.views.LoadingView
 import com.goodgame.goodgameapp.viewmodel.GameViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
-import kotlinx.coroutines.launch
 
 @SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalPagerApi::class)
@@ -119,7 +113,7 @@ fun CharacterCreationScreen(navController: NavController, viewModel: GameViewMod
             .fillMaxWidth()
             .align(Alignment.CenterHorizontally)) { // Character types
             Box(contentAlignment = Alignment.Center) {
-                characterChoseRow(pagerState, characterTypes.map { it.name })
+                CharacterChoseRow(pagerState, characterTypes.map { it.name })
             }
         }
         Row (modifier = Modifier.weight(1f)) { // Cards row
@@ -134,7 +128,7 @@ fun CharacterCreationScreen(navController: NavController, viewModel: GameViewMod
                 itemSpacing = 0.dp,
                 pagerState = pagerState,
                 contentFactory = { item ->
-                    characterCard(characterModel = item)
+                    CharacterCard(characterModel = item)
                 }
             )
         }
@@ -153,7 +147,7 @@ fun CharacterCreationScreen(navController: NavController, viewModel: GameViewMod
                 Status.SUCCESS -> {
                     loadingViewActive.value = false
                     if (it.data?.status == true)
-                        navController.navigate(Screen.MainScreen.route) {
+                        navController.navigate(Screen.SplashScreen.route) {
                             clearBackStack(navController, this)
                         }
                     else {
@@ -165,6 +159,7 @@ fun CharacterCreationScreen(navController: NavController, viewModel: GameViewMod
                     isErrorMessageActive.value = true
                     errorMessage.value = it.message ?: "Error create hero, no message"
                 }
+                Status.LOADING -> {}
             }
         }
     }
@@ -182,12 +177,10 @@ fun CharacterCreationScreen(navController: NavController, viewModel: GameViewMod
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-private fun characterChoseRow(currentCharacter: PagerState, characterTypes: List<String>) {
+private fun CharacterChoseRow(currentCharacter: PagerState, characterTypes: List<String>) {
     val scrollState = rememberLazyListState()
     val activeColor = Color(0xFFFFFFFF)
     val disactiveColor = Color(0x66FFFFFF)
-
-    val coroutineScope = rememberCoroutineScope()
 
     LazyRow (
         state = scrollState,
@@ -220,7 +213,7 @@ private fun characterChoseRow(currentCharacter: PagerState, characterTypes: List
 }
 
 @Composable
-private fun characterCard(characterModel: CharacterModel)
+private fun CharacterCard(characterModel: CharacterModel)
 {
     val cardSize = remember {mutableStateOf(Size.Zero)}
 
@@ -239,8 +232,8 @@ private fun characterCard(characterModel: CharacterModel)
         }
         val cardPaddingVertical = with(LocalDensity.current) {
             val Y2 = (cardSize.value.height - (cardSize.value.width / 0.57f))
-            val Y1 = (Y2 / 2);
-            (Y1 + (cardSize.value.width / 0.57f) * 0.07f).toInt().toDp();
+            val Y1 = (Y2 / 2)
+            (Y1 + (cardSize.value.width / 0.57f) * 0.07f).toInt().toDp()
         }
         if (cardSize.value != Size.Zero)
             Column (modifier = Modifier
@@ -274,26 +267,26 @@ private fun characterCard(characterModel: CharacterModel)
                     )
                 }
                 Row () {
-                    characterParameterScale(text = "СИЛА", parameter = characterModel.power, R.drawable.pl_red)
+                    CharacterParameterScale(text = "СИЛА", parameter = characterModel.power, R.drawable.pl_red)
                 }
                 Row () {
-                    characterParameterScale(text = "ИНТЕЛЛЕКТ", parameter = characterModel.intelligence, R.drawable.pl_blue)
+                    CharacterParameterScale(text = "ИНТЕЛЛЕКТ", parameter = characterModel.intelligence, R.drawable.pl_blue)
                 }
                 Row () {
-                    characterParameterScale(text = "ХАРИЗМА", parameter = characterModel.charisma, R.drawable.pl_gold)
+                    CharacterParameterScale(text = "ХАРИЗМА", parameter = characterModel.charisma, R.drawable.pl_gold)
                 }
                 Row () {
-                    characterParameterScale(text = "УДАЧА", parameter = characterModel.luck, R.drawable.pl_green)
+                    CharacterParameterScale(text = "УДАЧА", parameter = characterModel.luck, R.drawable.pl_green)
                 }
             }
     }
 }
 
 @Composable
-private fun characterParameterScale(text: String, parameter: Int, @DrawableRes background: Int) {
+private fun CharacterParameterScale(text: String, parameter: Int, @DrawableRes background: Int) {
     val maxParameter = 7
     val minParameter = 3
-    val parameter = remember {
+    val heroParameter = remember {
         when {
             parameter < minParameter -> return@remember minParameter
             parameter > maxParameter -> return@remember maxParameter
@@ -302,7 +295,7 @@ private fun characterParameterScale(text: String, parameter: Int, @DrawableRes b
     }
     val minLengthScale = 50
     val pointLength = (100 - minLengthScale) / (maxParameter - minParameter)
-    val scaleLength = (minLengthScale + (parameter - minParameter) * pointLength) / 100f
+    val scaleLength = (minLengthScale + (heroParameter - minParameter) * pointLength) / 100f
 
     val font = TextStyle(
         fontFamily = FontFamily(Font(R.font.micra_bold)),
@@ -332,7 +325,7 @@ private fun characterParameterScale(text: String, parameter: Int, @DrawableRes b
             modifier = Modifier.padding(start = 8.dp)
         )
         Text(
-            text = parameter.toString(),
+            text = heroParameter.toString(),
             color = Color.White,
             style = MaterialTheme.typography.subtitle2,
             fontSize = 20.sp,
@@ -350,7 +343,7 @@ private fun characterParameterScale(text: String, parameter: Int, @DrawableRes b
 @OptIn(ExperimentalPagerApi::class)
 @Preview
 @Composable
-private fun preview() {
+private fun CreateCharPreview() {
     val pagerState = rememberPagerState()
 
     Column(modifier = Modifier
@@ -403,7 +396,7 @@ private fun preview() {
             .fillMaxWidth()
             .align(Alignment.CenterHorizontally)) { // Character types
             Box(contentAlignment = Alignment.Center) {
-                characterChoseRow(pagerState, characterTypes.map { it.name })
+                CharacterChoseRow(pagerState, characterTypes.map { it.name })
             }
         }
         Row (modifier = Modifier.weight(1f)) { // Cards row
@@ -418,7 +411,7 @@ private fun preview() {
                 itemSpacing = 0.dp,
                 pagerState = pagerState,
                 contentFactory = { item ->
-                    characterCard(characterModel = item)
+                    CharacterCard(characterModel = item)
                 }
             )
 //            HorizontalPager(state = pagerState) { page ->
