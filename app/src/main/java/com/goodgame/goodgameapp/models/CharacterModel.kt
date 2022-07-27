@@ -1,6 +1,7 @@
 package com.goodgame.goodgameapp.models
 
 data class CharacterModel(
+    val id : Int,
     val name: String,
     val id_name: String,
     val description: String,

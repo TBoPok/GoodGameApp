@@ -41,6 +41,8 @@ import com.goodgame.goodgameapp.pager.Pager
 import com.goodgame.goodgameapp.pager.PagerState
 import com.goodgame.goodgameapp.pager.rememberPagerState
 import com.goodgame.goodgameapp.retrofit.Status
+import com.goodgame.goodgameapp.screens.controls.CardFace
+import com.goodgame.goodgameapp.screens.controls.FlipCard
 import com.goodgame.goodgameapp.screens.views.ColorButton
 import com.goodgame.goodgameapp.screens.views.ErrorAlert
 import com.goodgame.goodgameapp.screens.views.LoadingView
@@ -117,6 +119,13 @@ fun CharacterCreationScreen(navController: NavController, viewModel: GameViewMod
             }
         }
         Row (modifier = Modifier.weight(1f)) { // Cards row
+            val cardFace = remember {
+                val bufList = mutableListOf<MutableState<CardFace>>()
+                characterTypes.forEach {
+                    bufList.add(mutableStateOf(CardFace.Front))
+                }
+                bufList
+            }
             Pager(
                 items = characterTypes,
                 modifier = Modifier
@@ -127,8 +136,17 @@ fun CharacterCreationScreen(navController: NavController, viewModel: GameViewMod
                 initialIndex = 0,
                 itemSpacing = 0.dp,
                 pagerState = pagerState,
+                onClick = {cardFace[it].value = cardFace[it].value.next},
                 contentFactory = { item ->
-                    CharacterCard(characterModel = item)
+                    FlipCard(
+                        cardFace = cardFace[item.id].value,
+                        front = {
+                            CharacterCard(characterModel = item)
+                        },
+                        back = {
+                            CharacterCardBack(characterModel = item)
+                        }
+                    )
                 }
             )
         }
@@ -251,7 +269,7 @@ private fun CharacterCard(characterModel: CharacterModel)
                         fontSize = 15.sp
                     )
                     Text (
-                        text = characterModel.description,
+                        text = "Два раза кликни для просмотра описания",
                         style = font,
                         fontSize = 15.sp,
                         color = Color.White,
@@ -277,6 +295,57 @@ private fun CharacterCard(characterModel: CharacterModel)
                 }
                 Row () {
                     CharacterParameterScale(text = "УДАЧА", parameter = characterModel.luck, R.drawable.pl_green)
+                }
+            }
+    }
+}
+
+@Composable
+private fun CharacterCardBack(characterModel: CharacterModel)
+{
+    val cardSize = remember {mutableStateOf(Size.Zero)}
+
+    Box(modifier = Modifier
+        .fillMaxHeight()
+        .onGloballyPositioned { coords -> cardSize.value = coords.size.toSize() },
+    ) {
+        Image(
+            painterResource(characterModel.card_bg ?: R.drawable.bg),
+            contentDescription = "bg_card_image",
+            contentScale = ContentScale.FillBounds,
+            modifier = Modifier.fillMaxSize()
+        )
+        val cardPaddingHorizontal = with(LocalDensity.current) {
+            (cardSize.value.width * 0.13f).toInt().toDp()
+        }
+        val cardPaddingVertical = with(LocalDensity.current) {
+            val Y2 = (cardSize.value.height - (cardSize.value.width / 0.57f))
+            val Y1 = (Y2 / 2)
+            (Y1 + (cardSize.value.width / 0.57f) * 0.07f).toInt().toDp()
+        }
+        if (cardSize.value != Size.Zero)
+            Column (modifier = Modifier
+                .padding(
+                    start = cardPaddingHorizontal,
+                    end = cardPaddingHorizontal,
+                    bottom = cardPaddingVertical
+                )
+                .align(Alignment.BottomCenter)
+                .fillMaxHeight(0.45f)
+            ) {
+                Row () {
+                    val font = TextStyle(
+                        fontFamily = FontFamily(Font(R.font.micra)),
+                        fontWeight = FontWeight(400),
+                        fontSize = 15.sp
+                    )
+                    Text (
+                        text = characterModel.description,
+                        style = font,
+                        fontSize = 15.sp,
+                        color = Color.White,
+                        modifier = Modifier.padding(bottom = 10.dp)
+                    )
                 }
             }
     }
@@ -414,11 +483,6 @@ private fun CreateCharPreview() {
                     CharacterCard(characterModel = item)
                 }
             )
-//            HorizontalPager(state = pagerState) { page ->
-//                characterTypes.forEachIndexed { i, type ->
-//                    if (page == i) characterCard(characterModel = type)
-//                }
-//            }
         }
         Row (modifier = Modifier.padding(horizontal = 20.dp, vertical = 7.dp)) { // Apply row
             ColorButton(isActive = mutableStateOf(true), activeText = "Выбрать его", height = 55.dp) {

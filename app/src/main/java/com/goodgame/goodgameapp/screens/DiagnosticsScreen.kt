@@ -182,7 +182,7 @@ private fun UserParametersScale(
             Modifier
                 .weight(0.1f)
                 .padding(end = 5.dp)) {
-            characterParameterScale(text = text, parameter = parameter, background)
+            CharacterParameterScale(text = text, parameter = parameter, background)
         }
         Box(
             Modifier
@@ -274,7 +274,7 @@ private fun UserScores(text: String, points: Int) {
 }
 
 @Composable
-private fun characterParameterScale(text: String, parameter: Int, @DrawableRes background: Int) {
+private fun CharacterParameterScale(text: String, parameter: Int, @DrawableRes background: Int) {
      val font = TextStyle(
         fontFamily = FontFamily(Font(R.font.micra_bold)),
         fontWeight = FontWeight(400),

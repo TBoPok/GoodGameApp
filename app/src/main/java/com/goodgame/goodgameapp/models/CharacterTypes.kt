@@ -4,6 +4,7 @@ import com.goodgame.goodgameapp.R
 
 val characterTypes = listOf (
     CharacterModel(
+        id = 0,
         name = "ЛИДЕР",
         id_name = "charisma",
         description = "Описание",
@@ -14,6 +15,7 @@ val characterTypes = listOf (
         luck = 5,
     ),
     CharacterModel(
+        id = 1,
         name = "БОЕЦ",
         id_name = "power",
         description = "Описание",
@@ -24,6 +26,7 @@ val characterTypes = listOf (
         luck = 5,
     ),
     CharacterModel(
+        id = 2,
         name = "ИГРОК",
         id_name = "fortune",
         description = "Описание",
@@ -34,6 +37,7 @@ val characterTypes = listOf (
         luck = 7,
     ),
     CharacterModel(
+        id = 3,
         name = "УЧЕНЫЙ",
         id_name = "intellect",
         description = "Описание",

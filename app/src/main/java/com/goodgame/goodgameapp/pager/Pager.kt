@@ -5,25 +5,28 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.calculateTargetValue
 import androidx.compose.animation.splineBasedDecay
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.FractionalThreshold
+import androidx.compose.material.rememberSwipeableState
+import androidx.compose.material.swipeable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.input.pointer.PointerInputChange
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.positionChange
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Placeable
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.lang.Math.ceil
@@ -44,6 +47,7 @@ fun <T : Any> Pager(
     overshootFraction: Float = .5f,
     onItemSelect: (T) -> Unit = {},
     pagerState: PagerState,
+    onClick : (id: Int) -> Unit = {},
     contentFactory: @Composable (T) -> Unit,
 ) {
     require(initialIndex in 0..items.lastIndex) { "Initial index out of bounds" }
@@ -60,6 +64,7 @@ fun <T : Any> Pager(
     state.orientation = orientation
     state.listener = { index -> onItemSelect(items[index]) }
     state.scope = scope
+    state.onClick = onClick
 
     Layout(
         content = {
@@ -69,6 +74,7 @@ fun <T : Any> Pager(
                         Orientation.Horizontal -> Modifier.fillMaxWidth()
                         Orientation.Vertical -> Modifier.fillMaxHeight()
                     },
+
                     contentAlignment = Alignment.Center,
                 ) {
                     contentFactory(item)
@@ -119,7 +125,7 @@ fun <T : Any> Pager(
 }
 
 @Composable
-public fun rememberPagerState(): PagerState = remember { PagerState() }
+fun rememberPagerState(): PagerState = remember { PagerState() }
 
 private fun Constraints.dimension(orientation: Orientation) = when (orientation) {
     Orientation.Horizontal -> maxWidth
@@ -172,6 +178,7 @@ class PagerState {
     var scope: CoroutineScope? by mutableStateOf(null)
     var listener: (Int) -> Unit by mutableStateOf({})
     val dragOffset = Animatable(0f)
+    var onClick: (id: Int) -> Unit = {}
 
     private val animationSpec = SpringSpec<Float>(
         dampingRatio = Spring.DampingRatioLowBouncy,
@@ -206,12 +213,67 @@ class PagerState {
             )
         }
 
+        val onPressOffset = mutableStateOf(Offset.Zero)
         forEachGesture {
+            detectTapGestures(
+                onDoubleTap = {
+                    onClick(currentIndex)
+                },
+                onPress = {
+                    awaitPointerEventScope {
+                        val tracker = VelocityTracker()
+                        val decay = splineBasedDecay<Float>(this)
+                        val down = awaitFirstDown()
+                        val offsetLimit = calculateOffsetLimit()
+
+                        val dragHandler = { change: PointerInputChange ->
+                            scope?.launch {
+                                val dragChange = change.calculateDragChange(orientation)
+                                dragOffset.snapTo(
+                                    (dragOffset.value - dragChange).coerceIn(
+                                        offsetLimit.min,
+                                        offsetLimit.max
+                                    )
+                                )
+                                updateIndex(dragOffset.value)
+                            }
+                            tracker.addPosition(change.uptimeMillis, change.position)
+                        }
+
+                        when (orientation) {
+                            Orientation.Horizontal -> horizontalDrag(down.id, dragHandler)
+                            Orientation.Vertical -> verticalDrag(down.id, dragHandler)
+                        }
+                        val velocity = tracker.calculateVelocity(orientation)
+                        scope?.launch {
+                            var targetOffset = decay.calculateTargetValue(dragOffset.value, -velocity)
+                            val remainder = targetOffset.toInt().absoluteValue % itemDimension
+                            val extra = if (remainder > itemDimension / 2f) 1 else 0
+                            val lastVisibleIndex =
+                                (targetOffset.absoluteValue / itemDimension.toFloat()).toInt() + extra
+                            targetOffset = (lastVisibleIndex * (itemDimension + itemSpacing) * targetOffset.sign)
+                                .coerceIn(0f, (numberOfItems - 1).toFloat() * (itemDimension + itemSpacing))
+                            dragOffset.animateTo(
+                                animationSpec = animationSpec,
+                                targetValue = targetOffset,
+                                initialVelocity = -velocity
+                            ) {
+                                updateIndex(value)
+                            }
+                        }
+                    }
+
+                }
+            )
             awaitPointerEventScope {
                 val tracker = VelocityTracker()
                 val decay = splineBasedDecay<Float>(this)
                 val down = awaitFirstDown()
                 val offsetLimit = calculateOffsetLimit()
+
+//                if (change.pressed)
+//                    onClick(currentIndex)
+
                 val dragHandler = { change: PointerInputChange ->
                     scope?.launch {
                         val dragChange = change.calculateDragChange(orientation)
@@ -225,6 +287,7 @@ class PagerState {
                     }
                     tracker.addPosition(change.uptimeMillis, change.position)
                 }
+
                 when (orientation) {
                     Orientation.Horizontal -> horizontalDrag(down.id, dragHandler)
                     Orientation.Vertical -> verticalDrag(down.id, dragHandler)
@@ -248,7 +311,10 @@ class PagerState {
                 }
             }
         }
+
+
     }
+
 
     data class OffsetLimit(
         val min: Float,
