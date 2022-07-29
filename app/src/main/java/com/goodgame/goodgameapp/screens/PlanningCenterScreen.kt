@@ -59,7 +59,12 @@ fun PlanningCenterScreen(navController: NavController, viewModel: GameViewModel)
         .background(Color.Black)
         .clickable { navController.navigateUp() }) {
         Row {
-            Icon(Icons.Filled.ArrowBack,"",tint = Color.White)
+            Image(
+                painter = painterResource(R.drawable.arrow_back_ios),
+                contentDescription = "arrow_back",
+                modifier = Modifier.height(10.dp).padding(start = 5.dp).align(Alignment.CenterVertically),
+                contentScale = ContentScale.FillHeight,
+            )
             Text(
                 text = "На базу",
                 color = Color.White,

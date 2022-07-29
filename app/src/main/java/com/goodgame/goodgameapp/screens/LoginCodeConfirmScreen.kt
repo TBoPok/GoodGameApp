@@ -1,6 +1,5 @@
 package com.goodgame.goodgameapp.screens
 
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -8,16 +7,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -31,10 +26,7 @@ import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
 import com.goodgame.goodgameapp.R
 import com.goodgame.goodgameapp.navigation.Screen
 import com.goodgame.goodgameapp.retrofit.Status
@@ -161,7 +153,7 @@ fun CodeConfirmView (wrongKey : Boolean, done : (confirmCode : String) -> Unit) 
                 Spacer(modifier = Modifier.padding(top = 55.dp))
                 CodeConfirmField(confirmCode)
                 Spacer(modifier = Modifier.padding(top = 15.dp))
-                ColorButton(isActive = buttonActive, activeText = "Продолжить") {
+                MetallButton(isActive = buttonActive, activeText = "Продолжить") {
                     done(confirmCode.value)
                 }
             }

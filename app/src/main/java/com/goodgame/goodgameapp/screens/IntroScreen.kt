@@ -1,36 +1,27 @@
 package com.goodgame.goodgameapp.screens
 
 import androidx.annotation.DrawableRes
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.fontResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Devices
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
@@ -38,18 +29,14 @@ import androidx.navigation.NavController
 import com.goodgame.goodgameapp.R
 import com.goodgame.goodgameapp.navigation.Screen
 import com.goodgame.goodgameapp.navigation.clearBackStack
-import com.goodgame.goodgameapp.screens.views.ColorButton
+import com.goodgame.goodgameapp.screens.views.MetallButton
 import com.goodgame.goodgameapp.screens.views.IntroBottomImage
 import com.goodgame.goodgameapp.screens.views.IntroHorizontalPagerIndicator
-import com.goodgame.goodgameapp.screens.views.IntroTopImage
 import com.goodgame.goodgameapp.viewmodel.GameViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.google.accompanist.pager.rememberPagerState
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
-import kotlin.time.seconds
 
 
 @OptIn(ExperimentalPagerApi::class, kotlin.time.ExperimentalTime::class)
@@ -202,7 +189,7 @@ if (firstImage.value == true) {
             painterResource(R.drawable.openpage),
             contentDescription = "first_screen",
             contentScale = ContentScale.Crop,
-            modifier = Modifier.matchParentSize()
+            modifier = Modifier.matchParentSize().clickable { firstImage.value = false }
         )
     }
     Column(modifier = Modifier.fillMaxSize()) {
@@ -355,7 +342,7 @@ if (firstImage.value == true) {
                     }
                 }
                 Row () {
-                    ColorButton(
+                    MetallButton(
                         isActive = mutableStateOf(true),
                         activeText = "Продолжить",
                         height = 50.dp) {

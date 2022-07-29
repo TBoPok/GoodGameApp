@@ -27,12 +27,13 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.goodgame.goodgameapp.R
 import com.goodgame.goodgameapp.models.HeroInfo
-import com.goodgame.goodgameapp.screens.views.ColorButton
+import com.goodgame.goodgameapp.screens.views.MetallButton
 import com.goodgame.goodgameapp.viewmodel.GameViewModel
 
 @Composable
@@ -60,10 +61,16 @@ fun SupplyScreen(navController: NavController, viewModel: GameViewModel, initTab
         .background(Color.Black)
         .clickable { navController.navigateUp() }) {
         Row {
-            Icon(Icons.Filled.ArrowBack,"",tint = Color.White)
+            Image(
+                painter = painterResource(R.drawable.arrow_back_ios),
+                contentDescription = "arrow_back",
+                modifier = Modifier.height(10.dp).padding(start = 5.dp).align(Alignment.CenterVertically),
+                contentScale = ContentScale.FillHeight,
+                )
             Text(
                 text = "На базу",
                 color = Color.White,
+                lineHeight = 16.sp,
                 modifier = Modifier.padding(start = 1.dp, end = 3.dp))
         }
     }
@@ -74,10 +81,10 @@ data class TestRewardModel(val name: String, val count: Int)
 
 @Composable
 fun ActionRowSupply(initTab: Int) {
-    val testListShop = listOf(testShopItem("1", 100, true),
-        testShopItem("2", 200, true),
-        testShopItem("3", 3300, true),
-        testShopItem("4", 550, false))
+    val testListShop = listOf(testShopItem("Тестовая карточка", 100, true),
+        testShopItem("Гречка", 200, true),
+        testShopItem("Картофель", 3300, true),
+        testShopItem("Мастеркард", 999999, false))
     val testRewardModels = listOf(
         TestRewardModel("Ваз 2114", 1),
         TestRewardModel("Стиральная машина", 1),
@@ -133,8 +140,11 @@ fun ShopList(shopItems :List<testShopItem>) {
         }
     }
     Box(Modifier.fillMaxSize()) {
-        Box(Modifier.align(Alignment.BottomCenter).padding(bottom = 3.dp)) {
-            ColorButton(isActive = isItemChosen, height = 60.dp, activeText = "Вот это мне заверните, пожалуйста") {
+        Box(
+            Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 3.dp)) {
+            MetallButton(isActive = isItemChosen, height = 55.dp, activeText = "Вот это мне заверните, пожалуйста") {
 
             }
         }
@@ -159,12 +169,12 @@ private fun RewardCard(name: String, count: Int) {
     Row(modifier = Modifier
         .fillMaxWidth()
         .height(50.dp)
-        .clip(RoundedCornerShape(22.dp))
+        .clip(RoundedCornerShape(15.dp))
         .background(Color.White)
         .clickable { }) {
         Text(
             text = name,
-            style = MaterialTheme.typography.button,
+            style = MaterialTheme.typography.body1,
             color = Color.Black,
             modifier = Modifier
                 .padding(start = 15.dp)
@@ -177,12 +187,18 @@ private fun RewardCard(name: String, count: Int) {
                 painterResource(R.drawable.reward_count),
                 contentDescription = "reward_count",
                 contentScale = ContentScale.FillHeight,
-                modifier = Modifier.fillMaxHeight()
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .border(
+                        1.dp,
+                        Color.White,
+                        RoundedCornerShape(0.dp, 15.dp, 15.dp, 0.dp)
+                    )
             )
             Box(Modifier.matchParentSize(), contentAlignment = Alignment.CenterEnd) {
                 Text(
                     text = count.toString(),
-                    style = MaterialTheme.typography.button,
+                    style = MaterialTheme.typography.body1,
                     color = Color.White,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth(0.7f)
@@ -250,11 +266,11 @@ private fun TabChoice(state : MutableState<Int>) {
 @Composable
 private fun ShopCard(name: String, cost: Int, isAvailable: Boolean, isActive: Boolean, onClick: (it: String) -> Unit) {
     val backgroundBrush = when {
-        isActive -> Brush.linearGradient(
-            colors = listOf(Color(0xFF5E5E5E), Color(0xFF303030)),
-            start = Offset(Offset.Infinite.x / 2, 0f),
-            end = Offset(Offset.Infinite.x * 2 / 3,Offset.Infinite.y * 2),
-            tileMode = TileMode.Clamp)
+//        isActive -> Brush.linearGradient(
+//            colors = listOf(Color(0xFF5E5E5E), Color(0xFF303030)),
+//            start = Offset(Offset.Infinite.x / 2, 0f),
+//            end = Offset(Offset.Infinite.x * 2 / 3,Offset.Infinite.y * 2),
+//            tileMode = TileMode.Clamp)
         isAvailable -> Brush.linearGradient(
             colors = listOf(Color(0xFF323232), Color(0xFF000000)),
             start = Offset(Offset.Infinite.x / 2, 0f),
@@ -266,6 +282,7 @@ private fun ShopCard(name: String, cost: Int, isAvailable: Boolean, isActive: Bo
             end = Offset(Offset.Infinite.x * 2 / 3,Offset.Infinite.y * 2),
             tileMode = TileMode.Clamp)
     }
+    val activeBordersColor = Color.Blue
     val activeTextColor = Color(0xFFFFFFFF)
     val notActiveTextColor = Color(0x80FFFFFF)
 
@@ -273,7 +290,13 @@ private fun ShopCard(name: String, cost: Int, isAvailable: Boolean, isActive: Bo
         .padding(2.dp)
         .fillMaxWidth()
         .height(90.dp)
+        .clip(RoundedCornerShape(10.dp))
         .background(backgroundBrush)
+        .border(
+            1.dp,
+            if (isActive) activeBordersColor else Color.Transparent,
+            RoundedCornerShape(10.dp),
+        )
         .clickable { if (isAvailable) onClick(name) }) {
         Text (
             text = name,
@@ -287,7 +310,8 @@ private fun ShopCard(name: String, cost: Int, isAvailable: Boolean, isActive: Bo
             verticalAlignment = Alignment.CenterVertically) {
             Text(text = "$cost",
                 style = MaterialTheme.typography.subtitle1,
-                lineHeight = 15.sp,
+                fontSize = 15.sp,
+                lineHeight = 16.sp,
                 color = if (isAvailable) activeTextColor else notActiveTextColor)
             Spacer(modifier = Modifier.padding(end = 5.dp))
             Image(
@@ -387,6 +411,11 @@ private fun SupplyPreview() {
         .background(Color.Black)
         .clickable { }) {
         Row {
+            Image(
+                painter = painterResource(R.drawable.arrow_back_ios),
+                contentDescription = "arrow_back",
+                contentScale = ContentScale.FillHeight,
+            )
             Icon(Icons.Filled.ArrowBack,"",tint = Color.White)
             Text(
                 text = "На базу",

@@ -179,6 +179,7 @@ class PagerState {
     var listener: (Int) -> Unit by mutableStateOf({})
     val dragOffset = Animatable(0f)
     var onClick: (id: Int) -> Unit = {}
+    var isDrag by mutableStateOf(false)
 
     private val animationSpec = SpringSpec<Float>(
         dampingRatio = Spring.DampingRatioLowBouncy,
@@ -213,11 +214,13 @@ class PagerState {
             )
         }
 
-        val onPressOffset = mutableStateOf(Offset.Zero)
         forEachGesture {
+            viewConfiguration.longPressTimeoutMillis
             detectTapGestures(
-                onDoubleTap = {
-                    onClick(currentIndex)
+                onTap = {
+                    if (isDrag == false)
+                        onClick(currentIndex)
+                    isDrag = false
                 },
                 onPress = {
                     awaitPointerEventScope {
@@ -236,6 +239,7 @@ class PagerState {
                                     )
                                 )
                                 updateIndex(dragOffset.value)
+                                isDrag = true
                             }
                             tracker.addPosition(change.uptimeMillis, change.position)
                         }
@@ -265,51 +269,6 @@ class PagerState {
 
                 }
             )
-            awaitPointerEventScope {
-                val tracker = VelocityTracker()
-                val decay = splineBasedDecay<Float>(this)
-                val down = awaitFirstDown()
-                val offsetLimit = calculateOffsetLimit()
-
-//                if (change.pressed)
-//                    onClick(currentIndex)
-
-                val dragHandler = { change: PointerInputChange ->
-                    scope?.launch {
-                        val dragChange = change.calculateDragChange(orientation)
-                        dragOffset.snapTo(
-                            (dragOffset.value - dragChange).coerceIn(
-                                offsetLimit.min,
-                                offsetLimit.max
-                            )
-                        )
-                        updateIndex(dragOffset.value)
-                    }
-                    tracker.addPosition(change.uptimeMillis, change.position)
-                }
-
-                when (orientation) {
-                    Orientation.Horizontal -> horizontalDrag(down.id, dragHandler)
-                    Orientation.Vertical -> verticalDrag(down.id, dragHandler)
-                }
-                val velocity = tracker.calculateVelocity(orientation)
-                scope?.launch {
-                    var targetOffset = decay.calculateTargetValue(dragOffset.value, -velocity)
-                    val remainder = targetOffset.toInt().absoluteValue % itemDimension
-                    val extra = if (remainder > itemDimension / 2f) 1 else 0
-                    val lastVisibleIndex =
-                        (targetOffset.absoluteValue / itemDimension.toFloat()).toInt() + extra
-                    targetOffset = (lastVisibleIndex * (itemDimension + itemSpacing) * targetOffset.sign)
-                        .coerceIn(0f, (numberOfItems - 1).toFloat() * (itemDimension + itemSpacing))
-                    dragOffset.animateTo(
-                        animationSpec = animationSpec,
-                        targetValue = targetOffset,
-                        initialVelocity = -velocity
-                    ) {
-                        updateIndex(value)
-                    }
-                }
-            }
         }
 
 

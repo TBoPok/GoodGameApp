@@ -43,6 +43,7 @@ fun SplashScreen(navController: NavHostController, viewModel : GameViewModel) {
 
     val splashScreenState = remember { mutableStateOf(SplashScreenState.WAIT_RESPONSE)}
 
+    val errorMessage = remember { mutableStateOf("")}
     val activity = (LocalContext.current as? Activity)
     val lifecycleOwner = LocalLifecycleOwner.current
     val refreshKey = remember { mutableStateOf(true)}
@@ -61,7 +62,7 @@ fun SplashScreen(navController: NavHostController, viewModel : GameViewModel) {
                             viewModel.heroInfo.value?.hasHero = it.data.hasHero ?: false
                         }
                     }
-                    Status.ERROR   -> { splashScreenState.value = SplashScreenState.INTERNET_ERROR }
+                    Status.ERROR   -> { splashScreenState.value = SplashScreenState.INTERNET_ERROR; errorMessage.value = it?.message ?: "" }
                     Status.LOADING -> { }
                 }
             })
@@ -76,7 +77,9 @@ fun SplashScreen(navController: NavHostController, viewModel : GameViewModel) {
                 }
             })
     }
-
+//    navController.navigate(Screen.CharacterCreationScreen.route) {
+//        clearBackStack(navController, this)
+//    }
     when (splashScreenState.value) {
         SplashScreenState.LOGGED_IN -> {
             if (viewModel.heroInfo.value?.hasHero == false)
@@ -109,7 +112,7 @@ fun SplashScreen(navController: NavHostController, viewModel : GameViewModel) {
         }
         SplashScreenState.INTERNET_ERROR -> {
             ErrorAlert(
-                errorMessage = "Нет подключения к интернету",
+                errorMessage = "Нет соединения...\n${errorMessage.value}",
                 refresh = { refreshKey.trigger(); splashScreenState.value = SplashScreenState.WAIT_RESPONSE },
                 cancel = { activity?.finish() })
         }

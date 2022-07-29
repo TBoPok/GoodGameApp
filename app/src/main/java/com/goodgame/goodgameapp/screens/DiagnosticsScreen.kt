@@ -63,7 +63,12 @@ fun DiagnosticsScreen(navController: NavController, viewModel: GameViewModel) {
         .background(Color.Black)
         .clickable { navController.navigateUp() }) {
         Row {
-            Icon(Icons.Filled.ArrowBack,"",tint = Color.White)
+            Image(
+                painter = painterResource(R.drawable.arrow_back_ios),
+                contentDescription = "arrow_back",
+                modifier = Modifier.height(10.dp).padding(start = 5.dp).align(Alignment.CenterVertically),
+                contentScale = ContentScale.FillHeight,
+            )
             Text(
                 text = "На базу",
                 color = Color.White,
@@ -95,7 +100,7 @@ private fun HeadDiagnostic(heroInfo: HeroInfo?, isHeroLoaded : Boolean) {
         )
         Column(modifier = Modifier.matchParentSize()) {
             Row(modifier = Modifier.weight(0.20f)) {}
-            Row(modifier = Modifier.weight(0.20f)) {
+            Row(modifier = Modifier.weight(0.30f)) {
                 Text(
                     text = "СИСТЕМА\nДИАГНОСТИКИ",
                     style = headTextStyle,
@@ -123,7 +128,6 @@ private fun HeadDiagnostic(heroInfo: HeroInfo?, isHeroLoaded : Boolean) {
                         .padding(start = 20.dp)
                 )
             }
-            Row(modifier = Modifier.weight(0.05f)) {}
         }
     }
 }
@@ -305,8 +309,8 @@ private fun CharacterParameterScale(text: String, parameter: Int, @DrawableRes b
         Text(
             text = parameter.toString(),
             color = Color.White,
-            style = MaterialTheme.typography.subtitle2,
-            fontSize = 20.sp,
+            style = MaterialTheme.typography.h4,
+            fontSize = 30.sp,
             modifier = Modifier
                 .padding(end = 10.dp)
                 .align(Alignment.CenterEnd)

@@ -4,10 +4,13 @@ import android.annotation.SuppressLint
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -43,7 +46,7 @@ import com.goodgame.goodgameapp.pager.rememberPagerState
 import com.goodgame.goodgameapp.retrofit.Status
 import com.goodgame.goodgameapp.screens.controls.CardFace
 import com.goodgame.goodgameapp.screens.controls.FlipCard
-import com.goodgame.goodgameapp.screens.views.ColorButton
+import com.goodgame.goodgameapp.screens.views.MetallButton
 import com.goodgame.goodgameapp.screens.views.ErrorAlert
 import com.goodgame.goodgameapp.screens.views.LoadingView
 import com.goodgame.goodgameapp.viewmodel.GameViewModel
@@ -151,7 +154,7 @@ fun CharacterCreationScreen(navController: NavController, viewModel: GameViewMod
             )
         }
         Row (modifier = Modifier.padding(horizontal = 30.dp, vertical = 12.dp)) { // ApprButton(isActive = mutableStateOf(true), activeText = "Выбрать его", height = 55.dp) {
-            ColorButton(isActive = mutableStateOf(true), activeText = "Выбрать его") {
+            MetallButton(isActive = mutableStateOf(true), activeText = "Выбрать его") {
                 loadingViewActive.value = true
           
             }
@@ -266,11 +269,11 @@ private fun CharacterCard(characterModel: CharacterModel)
                     val font = TextStyle(
                         fontFamily = FontFamily(Font(R.font.micra)),
                         fontWeight = FontWeight(400),
-                        fontSize = 15.sp
+                        fontSize = 12.sp
                     )
                     Text (
-                        text = "Два раза кликни для просмотра описания",
-                        style = font,
+                        text = "Нажми для просмотра описания",
+                        style = MaterialTheme.typography.body1,
                         fontSize = 15.sp,
                         color = Color.White,
                         modifier = Modifier.padding(bottom = 10.dp)
@@ -331,7 +334,7 @@ private fun CharacterCardBack(characterModel: CharacterModel)
                     bottom = cardPaddingVertical
                 )
                 .align(Alignment.BottomCenter)
-                .fillMaxHeight(0.45f)
+                .fillMaxHeight(0.50f)
             ) {
                 Row () {
                     val font = TextStyle(
@@ -341,8 +344,7 @@ private fun CharacterCardBack(characterModel: CharacterModel)
                     )
                     Text (
                         text = characterModel.description,
-                        style = font,
-                        fontSize = 15.sp,
+                        style = MaterialTheme.typography.subtitle2,
                         color = Color.White,
                         modifier = Modifier.padding(bottom = 10.dp)
                     )
@@ -485,7 +487,7 @@ private fun CreateCharPreview() {
             )
         }
         Row (modifier = Modifier.padding(horizontal = 20.dp, vertical = 7.dp)) { // Apply row
-            ColorButton(isActive = mutableStateOf(true), activeText = "Выбрать его", height = 55.dp) {
+            MetallButton(isActive = mutableStateOf(true), activeText = "Выбрать его", height = 55.dp) {
 
             }
         }

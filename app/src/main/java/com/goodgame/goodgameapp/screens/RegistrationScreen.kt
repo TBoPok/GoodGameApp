@@ -1,43 +1,31 @@
 package com.goodgame.goodgameapp.screens
 
-import Devices.NEXUS_5
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.res.fontResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.goodgame.goodgameapp.R
 import com.goodgame.goodgameapp.models.ClubModel
-import com.goodgame.goodgameapp.retrofit.Status
 import com.goodgame.goodgameapp.screens.views.*
-import com.goodgame.goodgameapp.ui.theme.GoodGameAppTheme
 import com.goodgame.goodgameapp.viewmodel.LoginViewModel
 
 @Composable
@@ -78,7 +66,7 @@ fun RegistrationScreen(navController: NavHostController, viewModel: LoginViewMod
                         showClubListView.value = true
                     }
                     Spacer(modifier = Modifier.padding(5.dp))
-                    ColorButton(isActive = enterInAccountButtonActive, activeText = "Перейти в чат") {
+                    MetallButton(isActive = enterInAccountButtonActive, activeText = "Перейти в чат") {
                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(currentClub.value!!.telegram_bot_url))
                         ContextCompat.startActivity(context, intent, null)
                         navController.navigateUp()

@@ -46,7 +46,7 @@ fun MainScreen(navController: NavController, viewModel: GameViewModel) {
         .verticalScroll(scrollState)
     ) {
         Row  { // Head image and info
-            HeadMain(viewModel = viewModel, heroInfo = heroInfo)
+            HeadMain(username = viewModel.username, heroInfo = heroInfo, navController = navController)
         }
         Row (modifier = Modifier
             .fillMaxWidth()
@@ -57,7 +57,7 @@ fun MainScreen(navController: NavController, viewModel: GameViewModel) {
 }
 
 @Composable
-private fun HeadMain(viewModel: GameViewModel?, heroInfo: HeroInfo?) {
+private fun HeadMain(username: String?, heroInfo: HeroInfo?, navController: NavController) {
     Box (Modifier.fillMaxWidth()) {
         Image(
             painterResource(R.drawable.basehead),
@@ -68,11 +68,13 @@ private fun HeadMain(viewModel: GameViewModel?, heroInfo: HeroInfo?) {
         Column(modifier = Modifier.matchParentSize()) {
             Row (Modifier.weight(.08f)) { } // Empty row
             Row (Modifier.weight(.094f).fillMaxWidth()) {
-                ExperienceGraphics(heroInfo = heroInfo)
+                ExperienceGraphics(heroInfo = heroInfo) {
+                    navController.navigate(Screen.DiagnosticsScreen.route)
+                }
             } // Experience row
             Row (Modifier.padding(horizontal = 30.dp).weight(0.07f),
                 verticalAlignment = Alignment.CenterVertically) {
-                UserInfoRow(viewModel?.username, heroInfo?.heroClass)
+                UserInfoRow(username, heroInfo?.heroClass)
             }
             Row (Modifier.weight(.79f) ) {
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.BottomEnd)
@@ -130,7 +132,7 @@ private fun HeadMain(viewModel: GameViewModel?, heroInfo: HeroInfo?) {
 }
 
 @Composable
-fun ExperienceGraphics(heroInfo: HeroInfo?) {
+fun ExperienceGraphics(heroInfo: HeroInfo?, onClick: () -> Unit = {}) {
     val fontLevel = TextStyle(
         color = Color.White,
         fontFamily = FontFamily(Font(R.font.micra_bold)),
@@ -150,7 +152,7 @@ fun ExperienceGraphics(heroInfo: HeroInfo?) {
             start = (lvlImgSize.value.width * 0.43f).toInt().toDp(),
             end = (lvlNextImgSize.value.width * 0.68f).toInt().toDp())
     }
-    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+    Box(Modifier.fillMaxWidth().clickable { onClick() }, contentAlignment = Alignment.Center) {
         Box (modifier = Modifier
             .fillMaxHeight(0.65f)
             .fillMaxWidth()
@@ -297,7 +299,7 @@ private fun ActionMain(heroInfo: HeroInfo?, navController: NavController) {
                     .clip(RoundedCornerShape(5.dp))
                     .clickable {
                         navController.navigate("${Screen.IntroScreen.route}/false") {
-                            clearBackStack(navController, this)
+
                         }
                     },
                     contentAlignment = Alignment.Center) {
