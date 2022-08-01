@@ -366,7 +366,7 @@ private fun HeadSupply(heroInfo: HeroInfo?) {
                         )
                         Spacer(modifier = Modifier.width(5.dp))
                         Text(
-                            text = "333",
+                            text = heroInfo?.coins.toString(),
                             style = MaterialTheme.typography.h1,
                             color = Color.White,
                             modifier = Modifier.align(Alignment.CenterVertically)

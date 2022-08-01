@@ -35,6 +35,12 @@ interface ApiInterface {
         @Field("private_key") private_key : String,
         @Field("hero_type") hero_type : String) : HeroCreateResponse
 
+
+    @FormUrlEncoded
+    @POST("hero/skill")
+    suspend fun setHeroSkill(
+        @Field("private_key") private_key : String,
+        @Field("skill_type") skill_type : String): SkillResponse
 }
 
 object RetrofitBuilder {
@@ -73,4 +79,7 @@ class ApiHelper(private val apiService: ApiInterface) {
 
     suspend fun heroCreate(token : String, hero_type: String) =
         apiService.heroCreate(private_key = token, hero_type = hero_type)
+
+    suspend fun setHeroSkill(token: String, skill_type: String) =
+        apiService.setHeroSkill(private_key = token, skill_type = skill_type)
 }

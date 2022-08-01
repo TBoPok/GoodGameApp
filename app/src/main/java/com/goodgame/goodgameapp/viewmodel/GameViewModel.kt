@@ -44,10 +44,11 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
         next_lvl_need = 0,
         has_expeditions = 0,
         stats_points = 0,
-        stats = StatsModel(0,0,0,0)
+        stats = StatsModel(0,0,0,0),
+        coins = 0,
     ))
 
-    private var appToken : String = "0"
+    private var getToken : String = "0"
         get() {
             if (field == "0")
                 field = getToken()
@@ -116,13 +117,24 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
                     total_progress       = bufResponse.data.planet_status,
                     expeditions          = bufResponse.data.expeditions,
                     hasHero              = heroInfo.value?.hasHero ?: false,
-                    stats_points         = bufResponse.data.stats_points + 10,
+                    stats_points         = bufResponse.data.stats_points,
                     stats                = bufResponse.data.stats,
+                    coins                = bufResponse.data.rsp
                 )
                 heroInfo.postValue(bufHeroInfo)
-//                saveLastHeroData()
                 isHeroInfoLoaded.postValue(true)
                 emit(Response.success(data = null))
+            } catch (exception: Exception) {
+                emit(Response.error(data = null, message = exception.message ?: "Error Occurred!"))
+            }
+        }
+    }
+
+    fun setHeroSkill(skill_type: String) : LiveData<Response<SkillResponse>> {
+        return liveData(Dispatchers.IO) {
+            emit(Response.loading(data = null))
+            try {
+                emit(Response.success(data = apiInterface.setHeroSkill(getToken, skill_type)))
             } catch (exception: Exception) {
                 emit(Response.error(data = null, message = exception.message ?: "Error Occurred!"))
             }

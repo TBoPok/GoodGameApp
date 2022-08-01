@@ -7,6 +7,7 @@ data class HeroInfoResponse(
     val expeditions : List<ExpeditionModel>,
     val planet_status : Int?,
     val lvl_exp: Int,
+    val rsp: Int,
     val next_lvl_need : Int,
     val has_expeditions: Int,
     val stats_points: Int,
@@ -21,5 +22,6 @@ data class HeroInfo(
     var lvl_exp: Int,
     var next_lvl_need : Int,
     var has_expeditions: Int,
-    val stats_points: Int,
-    val stats: StatsModel)
+    var coins: Int,
+    var stats_points: Int,
+    var stats: StatsModel)

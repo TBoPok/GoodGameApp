@@ -4,11 +4,8 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -23,7 +20,6 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -32,6 +28,7 @@ import com.goodgame.goodgameapp.models.HeroInfo
 import com.goodgame.goodgameapp.models.StatsModel
 import com.goodgame.goodgameapp.navigation.Screen
 import com.goodgame.goodgameapp.screens.views.LevelsView
+import com.goodgame.goodgameapp.screens.views.SkillApplyView
 import com.goodgame.goodgameapp.viewmodel.GameViewModel
 
 @Composable
@@ -42,6 +39,9 @@ fun DiagnosticsScreen(navController: NavController, viewModel: GameViewModel) {
 
     val tempUserStats = remember { mutableStateOf<StatsModel>(heroInfo?.stats?.copy() ?: StatsModel(0,0,0,0))}
     val tempUserStatsPoints = remember { mutableStateOf(heroInfo?.stats_points ?: 0)}
+
+    val isSkillApplyViewActive = remember { mutableStateOf(false)}
+    val skillTypeApply = remember { mutableStateOf("")}
     
     val scrollState = rememberScrollState()
     Box(
@@ -53,7 +53,7 @@ fun DiagnosticsScreen(navController: NavController, viewModel: GameViewModel) {
         .fillMaxHeight()
         ) {
         Row { // Head row
-            HeadDiagnostic(tempUserStatsPoints.value, isHeroLoaded ?: false)
+            HeadDiagnostic(tempUserStatsPoints.value)
         }
         Row (Modifier.fillMaxSize()) { // Action row
             ActionRowDiagnostic(
@@ -62,7 +62,8 @@ fun DiagnosticsScreen(navController: NavController, viewModel: GameViewModel) {
                 heroInfo = heroInfo,
                 username = viewModel.username,
                 openLevels = {isLvlsListActive.value = true},
-                openRewards = {navController.navigate("${Screen.SupplyScreen.route}/1")})
+                openRewards = {navController.navigate("${Screen.SupplyScreen.route}/1")},
+                skillApply = {skillType -> isSkillApplyViewActive.value = true; skillTypeApply.value = skillType},)
         }
 
     }
@@ -91,11 +92,24 @@ fun DiagnosticsScreen(navController: NavController, viewModel: GameViewModel) {
             isLvlsListActive.value = false
         }
     }
+    if (isSkillApplyViewActive.value) {
+        SkillApplyView(
+            skill_type = skillTypeApply.value,
+            skillApply = viewModel.setHeroSkill(skillTypeApply.value),
+            onDone = {newStats ->
+                isSkillApplyViewActive.value = false
+                if (newStats != null) {
+                    heroInfo?.stats = newStats
+                    tempUserStats.value = newStats
+                    tempUserStatsPoints.value = tempUserStatsPoints.value - 1
+                }
+            }
+        )
+    }
 }
 
 @Composable
-private fun HeadDiagnostic(tempUserStatsPoints: Int, isHeroLoaded : Boolean) {
-    val hasStatsPoints = remember {mutableStateOf(tempUserStatsPoints > 0)}
+private fun HeadDiagnostic(tempUserStatsPoints: Int) {
     val headTextStyle = TextStyle(
         color = Color.White,
         fontFamily = FontFamily(Font(R.font.micra_bold)),
@@ -126,8 +140,7 @@ private fun HeadDiagnostic(tempUserStatsPoints: Int, isHeroLoaded : Boolean) {
             Row(modifier = Modifier
                 .weight(0.32f)
                 .padding(horizontal = 15.dp, vertical = 15.dp), verticalAlignment = Alignment.Bottom) {
-                if (hasStatsPoints.value)
-                        HasExpPoints(tempUserStatsPoints)
+                HasExpPoints(tempUserStatsPoints)
             }
             Row(modifier = Modifier.weight(0.18f)) {
                 Text(
@@ -194,11 +207,7 @@ private fun UserParametersScale(
     @DrawableRes background: Int,
     isButtonActive: Boolean,
     onClickPlus : () -> Unit)  {
-    var buttonBackground =
-        if (isButtonActive)
-            Color.LightGray
-        else
-            Color.Transparent
+
     Row() {
         Box (
             Modifier
@@ -216,16 +225,23 @@ private fun UserParametersScale(
                 modifier = Modifier
                     .align(Alignment.Center)
                     .height(37.dp)
-                    .width(37.dp)
-                    .background(buttonBackground),
+                    .width(37.dp),
                 contentScale = ContentScale.FillBounds,
+                alpha = if (isButtonActive) 1f else 0.5f
             )
         }
     }
 }
 
 @Composable
-private fun ActionRowDiagnostic(userStats: MutableState<StatsModel>, userStatsPoints: MutableState<Int>,heroInfo: HeroInfo?, username: String?, openRewards: () -> Unit, openLevels: () -> Unit) {
+private fun ActionRowDiagnostic(
+    userStats: MutableState<StatsModel>,
+    userStatsPoints: MutableState<Int>,
+    heroInfo: HeroInfo?,
+    username: String?,
+    skillApply: (skill_type: String) -> Unit,
+    openRewards: () -> Unit,
+    openLevels: () -> Unit) {
     
     Box {
         Image(
@@ -249,7 +265,7 @@ private fun ActionRowDiagnostic(userStats: MutableState<StatsModel>, userStatsPo
                 ExperienceGraphics(heroInfo = heroInfo)
             }
             Spacer(modifier = Modifier.height(20.dp))
-            UserScores("ОЧКИ ИССЛЕДОВАНИЯ", heroInfo?.lvl_exp ?: 0)
+            UserScores("ОЧКИ ИССЛЕДОВАНИЯ", heroInfo?.coins ?: 0)
             Spacer(modifier = Modifier.height(5.dp))
             UserScores("ОЧКИ ОПЫТА", heroInfo?.lvl_exp ?: 0)
             Spacer(modifier = Modifier.height(10.dp))
@@ -259,10 +275,7 @@ private fun ActionRowDiagnostic(userStats: MutableState<StatsModel>, userStatsPo
                 isButtonActive = userStatsPoints.value > 0,
                 background = R.drawable.pl_red
             ) {
-                if (userStatsPoints.value > 0) {
-                    userStats.value.power = userStats.value.power + 1;
-                    userStatsPoints.value = userStatsPoints.value - 1;
-                }
+                skillApply("power")
             }
             UserParametersScale(
                 text = "ИНТЕЛЛЕКТ",
@@ -270,10 +283,7 @@ private fun ActionRowDiagnostic(userStats: MutableState<StatsModel>, userStatsPo
                 isButtonActive = userStatsPoints.value > 0,
                 background = R.drawable.pl_blue
             ) {
-                if (userStatsPoints.value > 0) {
-                    userStats.value.intellect = userStats.value.intellect + 1;
-                    userStatsPoints.value = userStatsPoints.value - 1;
-                }
+                skillApply("intellect")
             }
             UserParametersScale(
                 text = "ХАРИЗМА",
@@ -281,10 +291,7 @@ private fun ActionRowDiagnostic(userStats: MutableState<StatsModel>, userStatsPo
                 isButtonActive = userStatsPoints.value > 0,
                 background = R.drawable.pl_gold
             ) {
-                if (userStatsPoints.value > 0) {
-                    userStats.value.charisma = userStats.value.charisma + 1;
-                    userStatsPoints.value = userStatsPoints.value - 1;
-                }
+                skillApply("charisma")
             }
             UserParametersScale(
                 text = "УДАЧА",
@@ -292,10 +299,7 @@ private fun ActionRowDiagnostic(userStats: MutableState<StatsModel>, userStatsPo
                 isButtonActive = userStatsPoints.value > 0,
                 background = R.drawable.pl_green
             ) {
-                if (userStatsPoints.value > 0) {
-                    userStats.value.fortune = userStats.value.fortune + 1;
-                    userStatsPoints.value = userStatsPoints.value - 1;
-                }
+                skillApply("fortune")
             }
             Spacer(modifier = Modifier.height(5.dp))
             BottomButtons(
