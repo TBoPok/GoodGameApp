@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.goodgame.goodgameapp.R
 import com.goodgame.goodgameapp.models.HeroInfo
+import com.goodgame.goodgameapp.models.StatsModel
 import com.goodgame.goodgameapp.navigation.Screen
 import com.goodgame.goodgameapp.screens.views.LevelsView
 import com.goodgame.goodgameapp.viewmodel.GameViewModel
@@ -39,6 +40,9 @@ fun DiagnosticsScreen(navController: NavController, viewModel: GameViewModel) {
     val isHeroLoaded by viewModel.isHeroInfoLoaded.observeAsState()
     val isLvlsListActive = remember {mutableStateOf(false)}
 
+    val tempUserStats = remember { mutableStateOf<StatsModel>(heroInfo?.stats?.copy() ?: StatsModel(0,0,0,0))}
+    val tempUserStatsPoints = remember { mutableStateOf(heroInfo?.stats_points ?: 0)}
+    
     val scrollState = rememberScrollState()
     Box(
         Modifier
@@ -49,10 +53,14 @@ fun DiagnosticsScreen(navController: NavController, viewModel: GameViewModel) {
         .fillMaxHeight()
         ) {
         Row { // Head row
-            HeadDiagnostic(heroInfo, isHeroLoaded ?: false)
+            HeadDiagnostic(tempUserStatsPoints.value, isHeroLoaded ?: false)
         }
         Row (Modifier.fillMaxSize()) { // Action row
-            ActionRowDiagnostic(heroInfo, viewModel.username,
+            ActionRowDiagnostic(
+                userStats = tempUserStats,
+                userStatsPoints = tempUserStatsPoints,
+                heroInfo = heroInfo,
+                username = viewModel.username,
                 openLevels = {isLvlsListActive.value = true},
                 openRewards = {navController.navigate("${Screen.SupplyScreen.route}/1")})
         }
@@ -66,7 +74,10 @@ fun DiagnosticsScreen(navController: NavController, viewModel: GameViewModel) {
             Image(
                 painter = painterResource(R.drawable.arrow_back_ios),
                 contentDescription = "arrow_back",
-                modifier = Modifier.height(10.dp).padding(start = 5.dp).align(Alignment.CenterVertically),
+                modifier = Modifier
+                    .height(10.dp)
+                    .padding(start = 5.dp)
+                    .align(Alignment.CenterVertically),
                 contentScale = ContentScale.FillHeight,
             )
             Text(
@@ -83,7 +94,8 @@ fun DiagnosticsScreen(navController: NavController, viewModel: GameViewModel) {
 }
 
 @Composable
-private fun HeadDiagnostic(heroInfo: HeroInfo?, isHeroLoaded : Boolean) {
+private fun HeadDiagnostic(tempUserStatsPoints: Int, isHeroLoaded : Boolean) {
+    val hasStatsPoints = remember {mutableStateOf(tempUserStatsPoints > 0)}
     val headTextStyle = TextStyle(
         color = Color.White,
         fontFamily = FontFamily(Font(R.font.micra_bold)),
@@ -114,12 +126,12 @@ private fun HeadDiagnostic(heroInfo: HeroInfo?, isHeroLoaded : Boolean) {
             Row(modifier = Modifier
                 .weight(0.32f)
                 .padding(horizontal = 15.dp, vertical = 15.dp), verticalAlignment = Alignment.Bottom) {
-                if (isHeroLoaded)
-                    HasExpPoints(2)
+                if (hasStatsPoints.value)
+                        HasExpPoints(tempUserStatsPoints)
             }
             Row(modifier = Modifier.weight(0.18f)) {
                 Text(
-                    text = "Тут находится всепоказатели твоего персонажа и тут ты можешь распределять очки опыта",
+                    text = "Тут находится все показатели твоего персонажа и тут ты можешь распределять очки опыта",
                     style = MaterialTheme.typography.subtitle1,
                     color = Color.White,
                     modifier = Modifier
@@ -180,7 +192,13 @@ private fun UserParametersScale(
     text: String,
     parameter: Int,
     @DrawableRes background: Int,
+    isButtonActive: Boolean,
     onClickPlus : () -> Unit)  {
+    var buttonBackground =
+        if (isButtonActive)
+            Color.LightGray
+        else
+            Color.Transparent
     Row() {
         Box (
             Modifier
@@ -198,7 +216,8 @@ private fun UserParametersScale(
                 modifier = Modifier
                     .align(Alignment.Center)
                     .height(37.dp)
-                    .width(37.dp),
+                    .width(37.dp)
+                    .background(buttonBackground),
                 contentScale = ContentScale.FillBounds,
             )
         }
@@ -206,8 +225,8 @@ private fun UserParametersScale(
 }
 
 @Composable
-private fun ActionRowDiagnostic(heroInfo: HeroInfo?, username: String?, openRewards: () -> Unit, openLevels: () -> Unit) {
-
+private fun ActionRowDiagnostic(userStats: MutableState<StatsModel>, userStatsPoints: MutableState<Int>,heroInfo: HeroInfo?, username: String?, openRewards: () -> Unit, openLevels: () -> Unit) {
+    
     Box {
         Image(
             painterResource(R.drawable.diag_bottom_bg),
@@ -234,10 +253,50 @@ private fun ActionRowDiagnostic(heroInfo: HeroInfo?, username: String?, openRewa
             Spacer(modifier = Modifier.height(5.dp))
             UserScores("ОЧКИ ОПЫТА", heroInfo?.lvl_exp ?: 0)
             Spacer(modifier = Modifier.height(10.dp))
-            UserParametersScale(text = "СИЛА", parameter = 5, R.drawable.pl_red) { }
-            UserParametersScale(text = "ИНТЕЛЛЕКТ", parameter = 5, R.drawable.pl_blue) { }
-            UserParametersScale(text = "ХАРИЗМА", parameter = 7, R.drawable.pl_gold) { }
-            UserParametersScale(text = "УДАЧА", parameter = 5, R.drawable.pl_green) { }
+            UserParametersScale(
+                text = "СИЛА",
+                parameter = userStats.value.power,
+                isButtonActive = userStatsPoints.value > 0,
+                background = R.drawable.pl_red
+            ) {
+                if (userStatsPoints.value > 0) {
+                    userStats.value.power = userStats.value.power + 1;
+                    userStatsPoints.value = userStatsPoints.value - 1;
+                }
+            }
+            UserParametersScale(
+                text = "ИНТЕЛЛЕКТ",
+                parameter = userStats.value.intellect,
+                isButtonActive = userStatsPoints.value > 0,
+                background = R.drawable.pl_blue
+            ) {
+                if (userStatsPoints.value > 0) {
+                    userStats.value.intellect = userStats.value.intellect + 1;
+                    userStatsPoints.value = userStatsPoints.value - 1;
+                }
+            }
+            UserParametersScale(
+                text = "ХАРИЗМА",
+                parameter = userStats.value.charisma,
+                isButtonActive = userStatsPoints.value > 0,
+                background = R.drawable.pl_gold
+            ) {
+                if (userStatsPoints.value > 0) {
+                    userStats.value.charisma = userStats.value.charisma + 1;
+                    userStatsPoints.value = userStatsPoints.value - 1;
+                }
+            }
+            UserParametersScale(
+                text = "УДАЧА",
+                parameter = userStats.value.fortune,
+                isButtonActive = userStatsPoints.value > 0,
+                background = R.drawable.pl_green
+            ) {
+                if (userStatsPoints.value > 0) {
+                    userStats.value.fortune = userStats.value.fortune + 1;
+                    userStatsPoints.value = userStatsPoints.value - 1;
+                }
+            }
             Spacer(modifier = Modifier.height(5.dp))
             BottomButtons(
                 onClickAwards = {openRewards()},
@@ -355,34 +414,6 @@ private fun BottomButtons(onClickAwards: () -> Unit, onClickLevels: () -> Unit) 
                     onClickLevels()
                 }
             )
-        }
-    }
-}
-
-@Preview()
-@Composable
-private fun DiagnPreview() {
-    val scrollState = rememberScrollState()
-    Column(modifier = Modifier
-        .verticalScroll(scrollState)) {
-        Row { // Head row
-            HeadDiagnostic(null,  false)
-        }
-        Row (Modifier.fillMaxSize()) { // Action row
-            ActionRowDiagnostic(null, "test", {}, {})
-        }
-
-    }
-    Box (modifier = Modifier
-        .padding(start = 20.dp, top = 20.dp)
-        .background(Color.Black)
-        .clickable { }) {
-        Row {
-            Icon(Icons.Filled.ArrowBack,"",tint = Color.White)
-            Text(
-                text = "На базу",
-                color = Color.White,
-                modifier = Modifier.padding(start = 1.dp, end = 3.dp))
         }
     }
 }

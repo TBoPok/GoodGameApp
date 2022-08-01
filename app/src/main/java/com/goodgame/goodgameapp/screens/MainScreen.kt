@@ -43,6 +43,7 @@ fun MainScreen(navController: NavController, viewModel: GameViewModel) {
 
     Column(modifier = Modifier
         .fillMaxSize()
+        .background(Color.Black)
         .verticalScroll(scrollState)
     ) {
         Row  { // Head image and info
@@ -258,14 +259,15 @@ private fun ProgressScale(
 
 @Composable
 private fun ActionMain(heroInfo: HeroInfo?, navController: NavController) {
-    Box {
+    Box (Modifier.background(Color.Black)) {
         Image(
-            painterResource(R.drawable.base_scroll_bg),
+//            painterResource(R.drawable.base_scroll_bg),
+            painterResource(R.drawable.diag_bottom_bg),
             contentDescription = "scroll_bg_image",
             modifier = Modifier
                 .fillMaxSize()
                 .scale(scaleY = 1.10f, scaleX = 1f),
-            contentScale = ContentScale.FillBounds,
+            contentScale = ContentScale.FillWidth,
         )
         Column(modifier = Modifier
             .fillMaxSize()
@@ -329,7 +331,6 @@ private fun ActionMain(heroInfo: HeroInfo?, navController: NavController) {
                     )
                 }
             }
-            Spacer(modifier = Modifier.padding(vertical = 10.dp))
         }
     }
 }

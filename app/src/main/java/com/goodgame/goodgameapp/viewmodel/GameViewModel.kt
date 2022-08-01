@@ -43,6 +43,8 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
         lvl_exp = 0,
         next_lvl_need = 0,
         has_expeditions = 0,
+        stats_points = 0,
+        stats = StatsModel(0,0,0,0)
     ))
 
     private var appToken : String = "0"
@@ -114,9 +116,11 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
                     total_progress       = bufResponse.data.planet_status,
                     expeditions          = bufResponse.data.expeditions,
                     hasHero              = heroInfo.value?.hasHero ?: false,
+                    stats_points         = bufResponse.data.stats_points + 10,
+                    stats                = bufResponse.data.stats,
                 )
                 heroInfo.postValue(bufHeroInfo)
-                saveLastHeroData()
+//                saveLastHeroData()
                 isHeroInfoLoaded.postValue(true)
                 emit(Response.success(data = null))
             } catch (exception: Exception) {
