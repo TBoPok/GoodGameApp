@@ -33,12 +33,18 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.goodgame.goodgameapp.R
 import com.goodgame.goodgameapp.models.HeroInfo
+import com.goodgame.goodgameapp.screens.views.HowToActivateView
 import com.goodgame.goodgameapp.screens.views.MetallButton
+import com.goodgame.goodgameapp.screens.views.RewardView
 import com.goodgame.goodgameapp.viewmodel.GameViewModel
 
 @Composable
 fun SupplyScreen(navController: NavController, viewModel: GameViewModel, initTab: Int = 0) {
     val heroInfo by viewModel.heroInfo.observeAsState()
+
+    val howToActivateActive = remember { mutableStateOf(false)}
+    val showReward = remember { mutableStateOf(false)}
+    val textReward = remember { mutableStateOf("")}
 
     Box(
         Modifier
@@ -52,7 +58,10 @@ fun SupplyScreen(navController: NavController, viewModel: GameViewModel, initTab
             HeadSupply(heroInfo)
         }
         Row (Modifier.fillMaxSize()) { // Action row
-            ActionRowSupply(initTab)
+            ActionRowSupply(
+                initTab,
+                howToActivate = {howToActivateActive.value = true},
+                rewardClicked = {reward -> showReward.value = true; textReward.value = reward})
         }
 
     }
@@ -64,7 +73,10 @@ fun SupplyScreen(navController: NavController, viewModel: GameViewModel, initTab
             Image(
                 painter = painterResource(R.drawable.arrow_back_ios),
                 contentDescription = "arrow_back",
-                modifier = Modifier.height(10.dp).padding(start = 5.dp).align(Alignment.CenterVertically),
+                modifier = Modifier
+                    .height(10.dp)
+                    .padding(start = 5.dp)
+                    .align(Alignment.CenterVertically),
                 contentScale = ContentScale.FillHeight,
                 )
             Text(
@@ -74,13 +86,21 @@ fun SupplyScreen(navController: NavController, viewModel: GameViewModel, initTab
                 modifier = Modifier.padding(start = 1.dp, end = 3.dp))
         }
     }
+    if (howToActivateActive.value)
+        HowToActivateView {
+            howToActivateActive.value = false
+        }
+    if (showReward.value)
+        RewardView(username = viewModel.username ?: "Юзернейм", text = textReward.value) {
+            showReward.value = false
+        }
 }
 
 data class testShopItem(val name: String, val cost: Int, val isAvailable: Boolean)
 data class TestRewardModel(val name: String, val count: Int)
 
 @Composable
-fun ActionRowSupply(initTab: Int) {
+fun ActionRowSupply(initTab: Int, howToActivate: () -> Unit, rewardClicked: (reward: String) -> Unit) {
     val testListShop = listOf(testShopItem("Тестовая карточка", 100, true),
         testShopItem("Гречка", 200, true),
         testShopItem("Картофель", 3300, true),
@@ -115,7 +135,10 @@ fun ActionRowSupply(initTab: Int) {
                     ShopList(testListShop)
                 }
                 1 -> {
-                    RewardsList(testRewardModels)
+                    RewardsList(
+                        rewardItems = testRewardModels,
+                        howToActivate = howToActivate,
+                        rewardClicked = rewardClicked)
                 }
             }
 
@@ -153,25 +176,77 @@ fun ShopList(shopItems :List<testShopItem>) {
 
 
 @Composable
-private fun RewardsList(rewardItems: List<TestRewardModel>) {
+private fun RewardsList(rewardItems: List<TestRewardModel>, rewardClicked: (reward: String) -> Unit, howToActivate: () -> Unit) {
     val scrollState = rememberLazyListState()
     LazyColumn(state = scrollState) {
         items(items = rewardItems) {
-            RewardCard(it.name,it.count)
+            RewardCard(it.name,it.count, onClick = rewardClicked)
             Spacer(modifier = Modifier.height(15.dp))
+        }
+    }
+    Box(Modifier.fillMaxSize()) {
+        Box(
+            Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 3.dp)) {
+            HowToActivateButton {howToActivate()}
         }
     }
 }
 
 @Composable
-private fun RewardCard(name: String, count: Int) {
+private fun HowToActivateButton(onClick: () -> Unit) {
+    Box (modifier = Modifier.clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Box(modifier = Modifier
+            .clip(RoundedCornerShape(15.dp))
+            .fillMaxWidth()
+            .background(Color.Transparent)
+            .border(
+                1.dp,
+                Color(0xFFBFEFFC),
+                RoundedCornerShape(15.dp),
+            )
+        ) {
+            Row (modifier = Modifier.height(55.dp)) {
+                Text(text = "Как активировать покупку",
+                    style = MaterialTheme.typography.h1,
+                    color = Color(0xFFFFFFFF),
+                    fontSize = 15.sp,
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .padding(start = 15.dp))
+                Spacer(Modifier.weight(1f))
+                Box(contentAlignment = Alignment.CenterEnd) {
+                    Image(
+                        painterResource(R.drawable.button_param),
+                        contentDescription = "scroll_bg_image",
+                        modifier = Modifier.fillMaxHeight(),
+                        contentScale = ContentScale.FillHeight,
+                    )
+                    Box(Modifier.matchParentSize(), contentAlignment = Alignment.CenterEnd) {
+                        Text(text = "?",
+                            style = MaterialTheme.typography.button,
+                            color = Color(0xFF000000),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth(0.7f))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RewardCard(name: String, count: Int, onClick: (reward: String) -> Unit) {
 
     Row(modifier = Modifier
         .fillMaxWidth()
         .height(50.dp)
         .clip(RoundedCornerShape(15.dp))
         .background(Color.White)
-        .clickable { }) {
+        .clickable {onClick(name) }) {
         Text(
             text = name,
             style = MaterialTheme.typography.body1,
@@ -384,43 +459,6 @@ private fun HeadSupply(heroInfo: HeroInfo?) {
                 }
             }
             Row(modifier = Modifier.weight(0.1f)) {}
-        }
-    }
-}
-
-@Preview@Composable
-private fun SupplyPreview() {
-    Box(
-        Modifier
-            .fillMaxSize()
-            .background(Color.Black))
-    Column(modifier = Modifier
-//        .verticalScroll(scrollState)
-        .fillMaxHeight()
-    ) {
-        Row { // Head row
-            HeadSupply(null)
-        }
-        Row (Modifier.fillMaxSize()) { // Action row
-            ActionRowSupply(0)
-        }
-
-    }
-    Box (modifier = Modifier
-        .padding(start = 20.dp, top = 20.dp)
-        .background(Color.Black)
-        .clickable { }) {
-        Row {
-            Image(
-                painter = painterResource(R.drawable.arrow_back_ios),
-                contentDescription = "arrow_back",
-                contentScale = ContentScale.FillHeight,
-            )
-            Icon(Icons.Filled.ArrowBack,"",tint = Color.White)
-            Text(
-                text = "На базу",
-                color = Color.White,
-                modifier = Modifier.padding(start = 1.dp, end = 3.dp))
         }
     }
 }

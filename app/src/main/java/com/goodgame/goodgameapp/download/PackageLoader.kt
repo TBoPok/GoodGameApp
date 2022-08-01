@@ -3,10 +3,13 @@ package com.goodgame.goodgameapp.download
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.liveData
 import com.goodgame.goodgameapp.retrofit.LiveResponse
 import com.goodgame.goodgameapp.retrofit.Response
 import com.goodgame.goodgameapp.retrofit.Status
+import kotlinx.coroutines.Dispatchers
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -20,50 +23,49 @@ data class PackageModel(val name: String, val url: String, val md5: String)
 
 class PackageLoader(
     private val context: Context,
-    private val dataListRequest: () -> List<PackageModel>,
     private val dataRequest: (url : String) -> ByteArray,
-            var responseStatus: MutableLiveData<LiveResponse<Int>>
-        = MutableLiveData<LiveResponse<Int>>(LiveResponse.loading(data = 0, message = "Loading"))
     ) {
 
-    fun Start() {
-        thread() {
+    fun start(dataListRequest: () -> List<PackageModel>) : LiveData<Response<Int>> {
+        return liveData(Dispatchers.IO) {
+            var currentPercents = 0
+            emit(responseLoadingUpdate(0))
             // Получаем список с элементами пакета для скачивания и сохранения
-            val listPackageResponse = getPackage()
+            val listPackageResponse = getPackage(dataListRequest)
             if (listPackageResponse == null) {
-                responseError("Сервер не отвечает")
-                return@thread
+                emit(responseError(currentPercents, "Сервер не отвечает"))
+                return@liveData
             }
             if (listPackageResponse.status == Status.ERROR) {
-                responseError(listPackageResponse.message!!)
-                return@thread
+                emit(responseError(currentPercents,listPackageResponse.message ?: "Ошибка без сообщения(PackageLoader)"))
+                return@liveData
             }
             if (listPackageResponse.data == null) {
-                responseError("Отстутствуют данные для скачивания")
-                return@thread
+                emit(responseError(currentPercents,"Отстутствуют данные для скачивания"))
+                return@liveData
             }
-            responseLoadingUpdate(10)
+            emit(responseLoadingUpdate(10))
             // Проверяем целостность кэша, получаем не загруженные и сломанные элементы
             val notLoadedPackage = checkPackage(listPackage = listPackageResponse.data)
 
-            responseLoadingUpdate(20)
-            var currentPercents = 20
+            emit(responseLoadingUpdate(20))
+            currentPercents = 20
             val percentForItem : Int = 80 / (notLoadedPackage.size + 1)
             // Загружаем недостающие элементы пакета
             notLoadedPackage.forEach() {
                 // Загружаем
                 val itemResponse = getItem(it.url)
                 if (itemResponse == null) {
-                    responseError("Сервер не отвечает")
-                    return@thread
+                    emit(responseError(currentPercents,"Сервер не отвечает"))
+                    return@liveData
                 }
                 if (itemResponse.status == Status.ERROR) {
-                    responseError(listPackageResponse.message!!)
-                    return@thread
+                    emit(responseError(currentPercents,listPackageResponse.message ?: "Ошибка без сообщения(PackageLoader)"))
+                    return@liveData
                 }
                 if (itemResponse.data == null) {
-                    responseError("Объект для скачивания " + it.name + " отсуствует")
-                    return@thread
+                    emit(responseError(currentPercents,"Объект для скачивания " + it.name + " отсуствует"))
+                    return@liveData
                 }
                 // Сохраняем
                 try {
@@ -72,21 +74,20 @@ class PackageLoader(
                     fos.close()
                 }
                 catch (ex : Exception) {
-                    responseError(ex.message.toString())
-                    return@thread
+                    emit(responseError(currentPercents,ex.message.toString()))
+                    return@liveData
                 }
                 // Записываем в преференс
                 saveMd5(it)
                 // Обновим проценты
                 currentPercents += percentForItem
-                responseLoadingUpdate(currentPercents)
+                emit(responseLoadingUpdate(currentPercents))
             }
             responseSuccess()
         }
-
     }
 
-    private fun getPackage() : Response<List<PackageModel>>? {
+    private fun getPackage(dataListRequest: () -> List<PackageModel>) : Response<List<PackageModel>>? {
         return try {
             Response.success(data = dataListRequest())
         } catch (exception: Exception) {
@@ -135,7 +136,7 @@ class PackageLoader(
             input.close()
             val md5Bytes: ByteArray = md5Hash.digest()
             for (i in md5Bytes.indices) {
-                returnVal += Integer.toString((md5Bytes[i] and 0xff.toByte()) + 0x100, 16).substring(1)
+                returnVal += ((md5Bytes[i] and 0xff.toByte()) + 0x100).toString(16).substring(1)
             }
         } catch (t: Throwable) {
             t.printStackTrace()
@@ -148,15 +149,15 @@ class PackageLoader(
         sharedPrefs.edit().putString(item.name, item.md5).apply()
     }
 
-    private fun responseError(message: String) {
-        responseStatus.postValue(LiveResponse.error(data = null, message = message))
+    private fun responseError(lastPercent: Int, message: String): Response<Int> {
+        return Response.error(data = lastPercent, message = message)
     }
 
-    private fun responseLoadingUpdate(percent: Int) {
-        responseStatus.postValue(LiveResponse.loading(data = percent, message = "Loading"))
+    private fun responseLoadingUpdate(percent: Int) : Response<Int> {
+        return Response.loading(data = percent, message = "Loading")
     }
 
-    private fun responseSuccess() {
-        responseStatus.postValue(LiveResponse.success(data = 100))
+    private fun responseSuccess() : Response<Int> {
+        return Response.success(data = 100)
     }
 }

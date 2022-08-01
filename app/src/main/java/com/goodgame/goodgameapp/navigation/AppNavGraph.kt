@@ -24,6 +24,7 @@ sealed class Screen(val route: String) {
     object PlanningCenterScreen: Screen("PlanningCenterScreen")
     object DiagnosticsScreen: Screen("DiagnosticsScreen")
     object SupplyScreen: Screen("SupplyScreen")
+    object LoadingStoryScreen: Screen("LoadingStoryScreen")
 }
 
 
@@ -36,8 +37,6 @@ fun clearBackStack(navController: NavController, navOptionsBuilder: NavOptionsBu
 }
 
 class AppNavGraph() {
-    // TODO Сделать кастомный навконтроллер для более удобного сброса графа переходов
-
     @Composable
     fun InitGraph(navController: NavHostController, loginViewModel: LoginViewModel, gameViewModel: GameViewModel) {
         NavHost(
@@ -86,6 +85,9 @@ class AppNavGraph() {
             }
             composable(Screen.SupplyScreen.route) {
                 SupplyScreen(navController, gameViewModel)
+            }
+            composable(Screen.LoadingStoryScreen.route) {
+                LoadingStoryScreen(navController, gameViewModel)
             }
         }
     }

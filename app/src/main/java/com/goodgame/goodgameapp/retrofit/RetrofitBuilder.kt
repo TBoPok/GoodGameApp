@@ -41,6 +41,9 @@ interface ApiInterface {
     suspend fun setHeroSkill(
         @Field("private_key") private_key : String,
         @Field("skill_type") skill_type : String): SkillResponse
+
+    @GET("images")
+    fun getImage(@Query("image") name: String) : ByteArray
 }
 
 object RetrofitBuilder {
@@ -82,4 +85,7 @@ class ApiHelper(private val apiService: ApiInterface) {
 
     suspend fun setHeroSkill(token: String, skill_type: String) =
         apiService.setHeroSkill(private_key = token, skill_type = skill_type)
+
+    fun getImage(name: String) =
+        apiService.getImage(name = name)
 }

@@ -265,9 +265,9 @@ private fun ActionRowDiagnostic(
                 ExperienceGraphics(heroInfo = heroInfo)
             }
             Spacer(modifier = Modifier.height(20.dp))
-            UserScores("ОЧКИ ИССЛЕДОВАНИЯ", heroInfo?.coins ?: 0)
+            UserScores("ОЧКИ ИССЛЕДОВАНИЯ", heroInfo?.coins ?: 0, true)
             Spacer(modifier = Modifier.height(5.dp))
-            UserScores("ОЧКИ ОПЫТА", heroInfo?.lvl_exp ?: 0)
+            UserScores("ОЧКИ ОПЫТА", heroInfo?.lvl_exp ?: 0, false)
             Spacer(modifier = Modifier.height(10.dp))
             UserParametersScale(
                 text = "СИЛА",
@@ -311,15 +311,14 @@ private fun ActionRowDiagnostic(
 }
 
 @Composable
-private fun UserScores(text: String, points: Int) {
+private fun UserScores(text: String, points: Int, showCoin: Boolean) {
     val textStyle = TextStyle(
         color = Color.White,
         fontFamily = FontFamily(Font(R.font.micra_bold)),
         fontWeight = FontWeight.Bold,
-        lineHeight = 17.sp,
         fontSize = 12.sp
     )
-    Row() {
+    Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = text,
             style = textStyle
@@ -331,12 +330,12 @@ private fun UserScores(text: String, points: Int) {
             color = Color(0x80FFFFFF)
         )
         Spacer(modifier = Modifier.padding(end = 5.dp))
-        Image(
-            painterResource(R.drawable.coin),
-            contentDescription = "coin",
-            contentScale = ContentScale.FillHeight,
-            modifier = Modifier.align(Alignment.CenterVertically)
-        )
+        if (showCoin)
+            Image(
+                painterResource(R.drawable.coin),
+                contentDescription = "coin",
+                contentScale = ContentScale.FillHeight,
+            )
     }
 }
 
