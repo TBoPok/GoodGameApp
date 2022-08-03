@@ -43,7 +43,20 @@ interface ApiInterface {
         @Field("skill_type") skill_type : String): SkillResponse
 
     @GET("images")
-    fun getImage(@Query("image") name: String) : ByteArray
+    suspend fun getImage(@Query("image") name: String) : ByteArray
+
+    @GET("hero/shop")
+    suspend fun getShopList() : ShopItemResponse
+
+    @FormUrlEncoded
+    @POST("hero/buy")
+    suspend fun buyShopItem(
+        @Field("private_key") private_key : String,
+        @Field("item_id") item_id : Int): ShopBuyResponse
+
+    @FormUrlEncoded
+    @POST("hero/rewards")
+    suspend fun getRewards(@Field("private_key") private_key : String) : RewardResponse
 }
 
 object RetrofitBuilder {
@@ -86,6 +99,15 @@ class ApiHelper(private val apiService: ApiInterface) {
     suspend fun setHeroSkill(token: String, skill_type: String) =
         apiService.setHeroSkill(private_key = token, skill_type = skill_type)
 
-    fun getImage(name: String) =
+    suspend fun getImage(name: String) =
         apiService.getImage(name = name)
+
+    suspend fun getShopList() =
+        apiService.getShopList()
+
+    suspend fun buyShopItem(token : String, item_id: Int) =
+        apiService.buyShopItem(private_key = token, item_id = item_id)
+
+    suspend fun getRewards(token : String) =
+        apiService.getRewards(private_key = token)
 }

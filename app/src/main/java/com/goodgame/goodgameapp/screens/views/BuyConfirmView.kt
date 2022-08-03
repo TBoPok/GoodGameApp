@@ -28,30 +28,38 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LiveData
 import com.goodgame.goodgameapp.R
+import com.goodgame.goodgameapp.models.ShopBuyResponse
+import com.goodgame.goodgameapp.models.ShopItem
 import com.goodgame.goodgameapp.models.SkillResponse
 import com.goodgame.goodgameapp.models.StatsModel
-import com.goodgame.goodgameapp.navigation.Screen
-import com.goodgame.goodgameapp.navigation.clearBackStack
 import com.goodgame.goodgameapp.retrofit.Response
 import com.goodgame.goodgameapp.retrofit.Status
-import com.goodgame.goodgameapp.viewmodel.GameViewModel
+import com.goodgame.goodgameapp.screens.SplashScreenState
 import kotlinx.coroutines.delay
 
 @Composable
-fun SkillApplyView(
-    skillApply: LiveData<Response<SkillResponse>>,
-    onDone: (StatsModel?) -> Unit) {
+fun BuyConfirmView(
+    shopItem: ShopItem,
+    buyApply: LiveData<Response<ShopBuyResponse>>,
+    getHeroInfo: LiveData<Response<Nothing?>>,
+    onDone: () -> Unit) {
+
     val title = remember { mutableStateOf("Подтверждение")}
-    val subTitle = remember { mutableStateOf("Потратить очко исследования?")}
+    val subTitle = remember { mutableStateOf("Покупаем ${shopItem.title}")}
     val applyButtonText = remember { mutableStateOf("Подтверждаю")}
     val isButtonsApplyActive = remember {mutableStateOf(true)}
     val isButtonsCancelActive = remember {mutableStateOf(true)}
-    val newStats = remember { mutableStateOf<StatsModel?>(null)}
-    val applyPressed = remember { mutableStateOf(false)}
+
+    /*
+    0 -> Ожидание подтверждения
+    1 -> Покупка
+    2 -> Обновление heroInfo
+     */
+    val buyState = remember { mutableStateOf(0)}
 
     BackHandler() {
         if (isButtonsCancelActive.value)
-            onDone(newStats.value)
+            onDone()
     }
 
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -79,16 +87,16 @@ fun SkillApplyView(
                 Row () {
                     Box(Modifier.weight(0.35f)) {
                         CancelButton(isActive = isButtonsCancelActive, height = 55.dp) {
-                            onDone(newStats.value)
+                            onDone()
                         }
                     }
                     Spacer(modifier = Modifier.width(15.dp))
                     Box(Modifier.weight(0.65f)) {
                         ApplyButton(isActive = isButtonsApplyActive, height = 55.dp, activeText = applyButtonText.value) {
                             if (applyButtonText.value == "Далее")
-                                onDone(newStats.value)
+                                onDone()
                             else
-                                applyPressed.value = true
+                                buyState.value = 1
                         }
                     }
                 }
@@ -96,60 +104,78 @@ fun SkillApplyView(
         }
     }
 
-    if (applyPressed.value) {
-        skillApply.observe(LocalLifecycleOwner.current) {
+    if (buyState.value == 1) {
+        buyApply.observe(LocalLifecycleOwner.current) {
             when (it.status) {
                 Status.SUCCESS -> {
                     if (it.data?.status == true) {
-                        title.value = "Готово!"
-                        subTitle.value = "Вы потрясающий почти как Годжи"
-                        isButtonsApplyActive.value = true
-                        isButtonsCancelActive.value = true
-                        applyButtonText.value = "Далее"
-                        newStats.value = it.data.stats
+                        buyState.value = 2
+
                     } else {
                         title.value = "Ошибка"
                         subTitle.value = it.data?.info ?: "текст ошибки куда-то пропал("
                         isButtonsApplyActive.value = false
                         isButtonsCancelActive.value = true
+                        buyState.value = 0
                     }
-                    applyPressed.value = false
                 }
                 Status.ERROR -> {
                     title.value = "Ошибка"
                     subTitle.value = it.message ?: "текст ошибки куда-то пропал("
                     isButtonsApplyActive.value = false
                     isButtonsCancelActive.value = true
-                    applyPressed.value = false
+                    buyState.value = 0
                 }
                 Status.LOADING -> {
-                    title.value = "Применяем нейро-имплант..."
+                    title.value = "Идём на склад"
                     isButtonsApplyActive.value = false
                     isButtonsCancelActive.value = false
                 }
             }
         }
     }
+    if (buyState.value == 2) {
+        getHeroInfo.observe(LocalLifecycleOwner.current) {
+            when (it.status) {
+                Status.SUCCESS -> {
+                    title.value = "Готово"
+                    subTitle.value = "Самое время воспользоваться покупочками"
+                    buyState.value = 3
+                    isButtonsApplyActive.value = true
+                    isButtonsCancelActive.value = true
+                    applyButtonText.value = "Далее"
+                }
+                Status.ERROR   -> {
+                    title.value = "Ошибка"
+                    subTitle.value = it.message ?: "текст ошибки куда-то пропал("
+                    isButtonsApplyActive.value = false
+                    isButtonsCancelActive.value = true
+                    buyState.value = 0
+                }
+                else -> {}
+            }
+        }
+    }
     val ticks = remember { mutableStateOf(0) }
     LaunchedEffect(title.value) {
-        when (title.value) {
-            "Применяем нейро-имплант..." -> while(true) {
+        when (buyState.value) {
+            1,2 -> while(true) {
                 when (ticks.value) {
                     0 -> subTitle.value = ""
-                    1 -> subTitle.value = "Ищем имплант..."
-                    2 -> subTitle.value = "Так, куда бы его воткнуть..."
-                    3 -> subTitle.value = "Вот эта дырка вроде подходит..."
-                    4 -> subTitle.value = "Пошли байты родимые..."
-                    5 -> subTitle.value = "11101110 11110101 11110011 11100101 11101101 11101101 11101110"
+                    1 -> subTitle.value = "Сканирование склада..."
+                    2 -> subTitle.value = "Сажусь в погрузчик..."
+                    3 -> subTitle.value = "Будь проклят тот день, когда я сел за баранку этого пылесоса..."
+                    4 -> subTitle.value = "Снимаю товар с полки..."
+                    5 -> subTitle.value = "Еду на выдачу. Кто придумал делать такой большой склад?"
                     6 -> subTitle.value = "Еще чуть-чуть..."
-                    7 -> { ticks. value = 0; return@LaunchedEffect }
                 }
                 delay(2000)
-                ticks.value++
+                if (ticks.value < 6)
+                    ticks.value++
             }
-            "Готово!" -> while(true) {
+            3 -> while(true) {
                 delay(2000)
-                onDone(newStats.value)
+                onDone()
             }
             else -> ticks.value = 0
         }
@@ -192,9 +218,9 @@ private fun CancelButton(isActive: MutableState<Boolean>, height: Dp, onClick: (
 
 @Composable
 private fun ApplyButton(isActive: MutableState<Boolean>,
-                 activeText: String, notActiveText: String = activeText,
-                 height : Dp = 63.dp,
-                 onClick: () -> Unit) {
+                        activeText: String, notActiveText: String = activeText,
+                        height : Dp = 63.dp,
+                        onClick: () -> Unit) {
 
     val backgroundActive = remember { mutableStateOf(isActive.value)}
     val textColor = remember { mutableStateOf(Color.White)}

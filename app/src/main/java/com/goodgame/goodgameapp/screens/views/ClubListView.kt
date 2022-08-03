@@ -88,6 +88,7 @@ fun ClubListView(viewModel: LoginViewModel, closeEvent: (currentClub: MutableSta
                     }
                 }
                 Status.ERROR   -> { clubsStatusMessage.value = clubsResponse.message ?: "" }
+                else -> {}
             }
         })
     }

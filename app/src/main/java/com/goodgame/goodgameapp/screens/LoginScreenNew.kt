@@ -132,9 +132,7 @@ fun LoginScreenNew(navController: NavHostController, viewModel: LoginViewModel) 
     }
     if (showClubListView.value == true) {
         ClubListView(viewModel = viewModel) { chosenClub ->
-            if (chosenClub != null) {
-                currentClub.value = chosenClub.value
-            }
+            currentClub.value = chosenClub.value
             showClubListView.value = false
         }
     }
@@ -155,6 +153,7 @@ fun LoginScreenNew(navController: NavHostController, viewModel: LoginViewModel) 
                     loadingViewActive.value = false
                     topTextState.value = 2
                 }
+                else -> {}
             }
         }
     }
@@ -202,7 +201,7 @@ fun PhoneNumberNew_Input(phoneNumber : MutableState<String>) {
     val focusBorderColor = remember {mutableStateOf(InActiveWhite)}
 
     TextField(
-        value = phoneNumber.value?: "",
+        value = phoneNumber.value,
         onValueChange = { changedValue ->
             val filteredValue = changedValue.filter { char -> char.isDigit() }
             phoneNumber.value = if (filteredValue.length < 10) filteredValue else filteredValue.substring(0..9)
@@ -233,12 +232,12 @@ fun PhoneNumberNew_Input(phoneNumber : MutableState<String>) {
             )
             .onFocusEvent { focusState ->
                 if (focusState.isFocused) {
-                    if (phoneNumber.value!!.length < 10)
+                    if (phoneNumber.value.length < 10)
                         focusBorderColor.value = FocusBlue
                     else
                         focusBorderColor.value = FocusGreen
                 } else {
-                    if (phoneNumber.value!!.length < 10)
+                    if (phoneNumber.value.length < 10)
                         focusBorderColor.value = InActiveWhite
                     else
                         focusBorderColor.value = FocusGreen

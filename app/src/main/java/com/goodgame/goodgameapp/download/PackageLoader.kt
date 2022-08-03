@@ -23,11 +23,11 @@ data class PackageModel(val name: String, val url: String, val md5: String)
 
 class PackageLoader(
     private val context: Context,
-    private val dataRequest: (url : String) -> ByteArray,
+    private val dataRequest: suspend (url : String) -> ByteArray,
     ) {
 
     fun start(dataListRequest: () -> List<PackageModel>) : LiveData<Response<Int>> {
-        return liveData(Dispatchers.IO) {
+        return liveData(Dispatchers.Default) {
             var currentPercents = 0
             emit(responseLoadingUpdate(0))
             // Получаем список с элементами пакета для скачивания и сохранения
@@ -87,7 +87,7 @@ class PackageLoader(
         }
     }
 
-    private fun getPackage(dataListRequest: () -> List<PackageModel>) : Response<List<PackageModel>>? {
+    private suspend fun getPackage(dataListRequest: () -> List<PackageModel>) : Response<List<PackageModel>>? {
         return try {
             Response.success(data = dataListRequest())
         } catch (exception: Exception) {
@@ -95,7 +95,7 @@ class PackageLoader(
         }
     }
 
-    private fun getItem(url: String) : Response<ByteArray>? {
+    private suspend fun getItem(url: String) : Response<ByteArray>? {
         return try {
             Response.success(data = dataRequest(url))
         } catch (exception: Exception) {
@@ -103,7 +103,7 @@ class PackageLoader(
         }
     }
 
-    private fun checkPackage(listPackage: List<PackageModel>) : List<PackageModel> {
+    private suspend fun checkPackage(listPackage: List<PackageModel>) : List<PackageModel> {
 
         val sharedPrefs : SharedPreferences = context.getSharedPreferences("PACKAGE_DB", Context.MODE_PRIVATE)
         fun getPrefsMd5(name : String) : String = sharedPrefs.getString(name,"")?.uppercase(Locale.getDefault()) ?: ""

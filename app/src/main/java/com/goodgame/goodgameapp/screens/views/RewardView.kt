@@ -1,5 +1,6 @@
 package com.goodgame.goodgameapp.screens.views
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -47,5 +48,8 @@ fun RewardView(username: String, text: String, onClose: () -> Unit) {
                 }
             }
         }
+    }
+    BackHandler() {
+        onClose()
     }
 }

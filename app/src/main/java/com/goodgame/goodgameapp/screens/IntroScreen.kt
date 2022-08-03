@@ -42,7 +42,7 @@ import kotlinx.coroutines.delay
 @OptIn(ExperimentalPagerApi::class, kotlin.time.ExperimentalTime::class)
     @Composable
 fun IntroScreen (navController: NavController, viewModel: GameViewModel, isCharCreate: Boolean) {
-    val isCharCreate = remember { mutableStateOf(isCharCreate)}
+    val isCharCreated = remember { mutableStateOf(isCharCreate)}
     val firstImage = remember {mutableStateOf(true)}
     val pagesState = rememberPagerState(pageCount = 6)
 
@@ -143,7 +143,7 @@ fun IntroScreen (navController: NavController, viewModel: GameViewModel, isCharC
                     }
                     5 -> {
                         IntroCard_6 {
-                            if(isCharCreate.value)
+                            if(isCharCreated.value)
                                 navController.navigate(Screen.CharacterCreationScreen.route) {
                                 //clearBackStack(navController,this)
                                 }

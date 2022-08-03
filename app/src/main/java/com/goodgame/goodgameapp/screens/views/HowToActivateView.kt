@@ -1,5 +1,6 @@
 package com.goodgame.goodgameapp.screens.views
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -49,5 +50,8 @@ fun HowToActivateView(onClose: () -> Unit) {
                 }
             }
         }
+    }
+    BackHandler() {
+        onClose()
     }
 }

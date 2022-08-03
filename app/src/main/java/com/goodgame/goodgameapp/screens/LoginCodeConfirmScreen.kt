@@ -77,6 +77,7 @@ fun LoginCodeConfirmScreen (navController: NavController, viewModel: LoginViewMo
                             screenState.value = LoginCCState.INTERNET_ERROR
                             errorMessage.value = it.message ?: ""
                         }
+                        else -> {}
                     }
                 }
             }

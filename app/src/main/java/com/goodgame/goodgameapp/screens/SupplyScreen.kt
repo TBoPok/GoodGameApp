@@ -1,14 +1,16 @@
 package com.goodgame.goodgameapp.screens
 
+import android.util.Log
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -20,23 +22,35 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.LiveData
 import androidx.navigation.NavController
 import com.goodgame.goodgameapp.R
 import com.goodgame.goodgameapp.models.HeroInfo
-import com.goodgame.goodgameapp.screens.views.HowToActivateView
-import com.goodgame.goodgameapp.screens.views.MetallButton
-import com.goodgame.goodgameapp.screens.views.RewardView
+import com.goodgame.goodgameapp.models.Reward
+import com.goodgame.goodgameapp.models.ShopItem
+import com.goodgame.goodgameapp.pager.Pager
+import com.goodgame.goodgameapp.pager.PagerState
+import com.goodgame.goodgameapp.retrofit.Response
+import com.goodgame.goodgameapp.retrofit.Status
+import com.goodgame.goodgameapp.screens.views.*
 import com.goodgame.goodgameapp.viewmodel.GameViewModel
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.rememberPagerState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.newCoroutineContext
+import kotlin.coroutines.CoroutineContext
 
 @Composable
 fun SupplyScreen(navController: NavController, viewModel: GameViewModel, initTab: Int = 0) {
@@ -45,6 +59,48 @@ fun SupplyScreen(navController: NavController, viewModel: GameViewModel, initTab
     val howToActivateActive = remember { mutableStateOf(false)}
     val showReward = remember { mutableStateOf(false)}
     val textReward = remember { mutableStateOf("")}
+
+    val showBuyConfirm = remember { mutableStateOf(false)}
+    val itemConfirm = remember { mutableStateOf<ShopItem?>(null)}
+
+    val loadingStateShop = remember { mutableStateOf(true)}
+    val shopList = remember { mutableStateOf<List<ShopItem>?>(null)}
+    if (loadingStateShop.value) {
+        viewModel.getShopList().observe(LocalLifecycleOwner.current) {
+            when (it.status) {
+                Status.SUCCESS -> {
+                    if (it.data == null)
+                        TODO()
+                    else
+                        shopList.value = it.data
+                    loadingStateShop.value = false
+                }
+                Status.ERROR -> {
+                    Log.d("HTTP", "SupplyScreen ${it.message}")
+                    loadingStateShop.value = false
+                }
+                Status.LOADING -> {}
+            }
+        }
+    }
+
+    val loadingStateRewards = remember { mutableStateOf(true)}
+    val rewardsList = remember { mutableStateOf<List<Reward>?>(null)}
+    if (loadingStateRewards.value) {
+        viewModel.getRewardList().observe(LocalLifecycleOwner.current) {
+            when (it.status) {
+                Status.SUCCESS -> {
+                    rewardsList.value = it.data ?: listOf()
+                    loadingStateRewards.value = false
+                }
+                Status.ERROR -> {
+                    Log.d("HTTP", "SupplyScreen ${it.message}")
+                    loadingStateRewards.value = false
+                }
+                Status.LOADING -> {}
+            }
+        }
+    }
 
     Box(
         Modifier
@@ -60,8 +116,11 @@ fun SupplyScreen(navController: NavController, viewModel: GameViewModel, initTab
         Row (Modifier.fillMaxSize()) { // Action row
             ActionRowSupply(
                 initTab,
-                howToActivate = {howToActivateActive.value = true},
-                rewardClicked = {reward -> showReward.value = true; textReward.value = reward})
+                shopList = shopList.value,
+                rewardList = rewardsList.value,
+                buyClick = {shopItem -> showBuyConfirm.value = true; itemConfirm.value = shopItem},
+                rewardClick = {reward -> showReward.value = true; textReward.value = reward},
+                howToActivate = {howToActivateActive.value = true},)
         }
 
     }
@@ -94,24 +153,40 @@ fun SupplyScreen(navController: NavController, viewModel: GameViewModel, initTab
         RewardView(username = viewModel.username ?: "Юзернейм", text = textReward.value) {
             showReward.value = false
         }
+    if (showBuyConfirm.value)
+        BuyConfirmView(
+            shopItem = itemConfirm.value!!,
+            buyApply = viewModel.buyShopItem(itemConfirm.value!!),
+            getHeroInfo = viewModel.getHeroInfo(),
+            onDone = {
+                showBuyConfirm.value = false
+                rewardsList.value = null
+                loadingStateRewards.value = true
+            }
+        )
 }
 
-data class testShopItem(val name: String, val cost: Int, val isAvailable: Boolean)
 data class TestRewardModel(val name: String, val count: Int)
 
+@OptIn(ExperimentalPagerApi::class)
 @Composable
-fun ActionRowSupply(initTab: Int, howToActivate: () -> Unit, rewardClicked: (reward: String) -> Unit) {
-    val testListShop = listOf(testShopItem("Тестовая карточка", 100, true),
-        testShopItem("Гречка", 200, true),
-        testShopItem("Картофель", 3300, true),
-        testShopItem("Мастеркард", 999999, false))
-    val testRewardModels = listOf(
-        TestRewardModel("Ваз 2114", 1),
-        TestRewardModel("Стиральная машина", 1),
-        TestRewardModel("Кот", 1)
-    )
+fun ActionRowSupply(
+    initTab: Int,
+    shopList: List<ShopItem>?,
+    rewardList: List<Reward>?,
+    buyClick: (product: ShopItem) -> Unit,
+    rewardClick: (reward: String) -> Unit,
+    howToActivate: () -> Unit) {
 
-    val tabState = remember { mutableStateOf(initTab)} // 0 - Магазин, 1 - мои награды
+    val pagesState = rememberPagerState(pageCount = 2, initialPage = initTab)
+    val coroutineScope = rememberCoroutineScope()
+    val newPage = remember { mutableStateOf(initTab)}
+    val setPage: (page: Int) -> Unit = {
+        coroutineScope.launch {
+            pagesState.animateScrollToPage(it)
+        }
+    }
+
     Box {
         Image(
             painterResource(R.drawable.diag_bottom_bg),
@@ -128,61 +203,127 @@ fun ActionRowSupply(initTab: Int, howToActivate: () -> Unit, rewardClicked: (rew
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(25.dp))
-            TabChoice(state = tabState)
+
+            TabChoice(pagesState.currentPage, onClick = setPage)
             Spacer(modifier = Modifier.height(10.dp))
-            when (tabState.value) {
-                0 -> {
-                    ShopList(testListShop)
-                }
-                1 -> {
-                    RewardsList(
-                        rewardItems = testRewardModels,
-                        howToActivate = howToActivate,
-                        rewardClicked = rewardClicked)
+
+            HorizontalPager(state = pagesState, verticalAlignment = Alignment.Top) { page ->
+                when (page) {
+                    0 -> {
+                        ShopList(
+                            placeHolder = shopList == null,
+                            shopItems = shopList ?: emptyList(),
+                            buyClick = buyClick)
+                    }
+                    1 -> {
+                        RewardsList(
+                            placeholder = rewardList == null,
+                            rewardItems = rewardList ?: emptyList(),
+                            howToActivate = howToActivate,
+                            rewardClicked = rewardClick)
+                    }
                 }
             }
+
 
         }
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ShopList(shopItems :List<testShopItem>) {
-    val chosenItem = remember {mutableStateOf("")}
+fun ShopList(
+    placeHolder: Boolean,
+    shopItems :List<ShopItem>,
+    buyClick: (product: ShopItem) -> Unit,) {
+
+    val chosenItem = remember {mutableStateOf(-1)}
     val isItemChosen = remember {mutableStateOf(false)}
-    LazyVerticalGrid(cells = GridCells.Fixed(2), modifier = Modifier.padding(bottom = 60.dp)) {
-        items(items = shopItems) { product ->
-            ShopCard(
-                name = product.name,
-                cost = product.cost,
-                isAvailable = product.isAvailable,
-                isActive = chosenItem.value == product.name,
-                onClick = {chosenItem.value = it; isItemChosen.value = true}
-            )
+
+    Box(Modifier
+        .fillMaxHeight())
+    {
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            modifier = Modifier.padding(bottom = 60.dp)
+        ) {
+            if (placeHolder) {
+                repeat(8) {
+                    item {
+                        ShopCardPlaceholder()
+                    }
+                }
+            } else {
+                items(items = shopItems) { shopItem ->
+                    ShopCard(
+                        shopItem = shopItem,
+                        isActive = chosenItem.value == shopItem.id,
+                        onClick = {
+                            chosenItem.value = shopItem.id;
+                            isItemChosen.value = true;
+                        }
+                    )
+                }
+            }
         }
-    }
-    Box(Modifier.fillMaxSize()) {
         Box(
             Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 3.dp)) {
             MetallButton(isActive = isItemChosen, height = 55.dp, activeText = "Вот это мне заверните, пожалуйста") {
-
+                val chosenItem = shopItems.find {it.id == chosenItem.value}
+                if (chosenItem != null)
+                    buyClick(chosenItem)
             }
         }
     }
 }
 
+@Composable
+fun ShopCardPlaceholder() {
+    val transition = rememberInfiniteTransition() // animate infinite times
+    val translateAnimation = transition.animateFloat( //animate the transition
+        initialValue = -200f,
+        targetValue = 200f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = 1500, // duration for the animation
+                easing = FastOutLinearInEasing
+            ),
+        )
+    )
+    val backgroundBrush = Brush.linearGradient(
+        colors = listOf(Color(0x80323232), Color(0x4D000000), Color(0x80323232)),
+        start = Offset(translateAnimation.value + 200, translateAnimation.value + 200),
+        end = Offset(translateAnimation.value,translateAnimation.value))
+
+    Box(modifier = Modifier
+        .padding(2.dp)
+        .fillMaxWidth()
+        .height(90.dp)
+        .clip(RoundedCornerShape(10.dp))
+        .background(backgroundBrush)
+        .border(
+            1.dp,
+            Color.Transparent,
+            RoundedCornerShape(10.dp),
+        )
+    ) {
+
+    }
+}
+
 
 @Composable
-private fun RewardsList(rewardItems: List<TestRewardModel>, rewardClicked: (reward: String) -> Unit, howToActivate: () -> Unit) {
+private fun RewardsList(placeholder: Boolean, rewardItems: List<Reward>, rewardClicked: (reward: String) -> Unit, howToActivate: () -> Unit) {
     val scrollState = rememberLazyListState()
-    LazyColumn(state = scrollState) {
-        items(items = rewardItems) {
-            RewardCard(it.name,it.count, onClick = rewardClicked)
-            Spacer(modifier = Modifier.height(15.dp))
-        }
+    LazyColumn(state = scrollState, modifier = Modifier.padding(bottom = 60.dp)) {
+        if (placeholder)
+            repeat(8){ item { RewardCardPlaceholder()} }
+        else
+            items(items = rewardItems) {
+                RewardCard(it.reward,1, onClick = rewardClicked)
+                Spacer(modifier = Modifier.height(15.dp))
+            }
     }
     Box(Modifier.fillMaxSize()) {
         Box(
@@ -246,14 +387,16 @@ private fun RewardCard(name: String, count: Int, onClick: (reward: String) -> Un
         .height(50.dp)
         .clip(RoundedCornerShape(15.dp))
         .background(Color.White)
-        .clickable {onClick(name) }) {
+        .clickable { onClick(name) }) {
         Text(
             text = name,
             style = MaterialTheme.typography.body1,
+            fontSize = 15.sp,
             color = Color.Black,
             modifier = Modifier
                 .padding(start = 15.dp)
                 .align(Alignment.CenterVertically)
+                .fillMaxWidth(0.7f)
         )
         Spacer(modifier = Modifier.weight(1f))
         Box(contentAlignment = Alignment.CenterEnd)
@@ -274,6 +417,7 @@ private fun RewardCard(name: String, count: Int, onClick: (reward: String) -> Un
                 Text(
                     text = count.toString(),
                     style = MaterialTheme.typography.body1,
+                    fontSize = 15.sp,
                     color = Color.White,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth(0.7f)
@@ -284,8 +428,59 @@ private fun RewardCard(name: String, count: Int, onClick: (reward: String) -> Un
     }
 }
 
+
 @Composable
-private fun TabChoice(state : MutableState<Int>) {
+private fun RewardCardPlaceholder() {
+    val transition = rememberInfiniteTransition() // animate infinite times
+
+    val translateAnimation = transition.animateFloat( //animate the transition
+        initialValue = -200f,
+        targetValue = 200f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = 1500, // duration for the animation
+                easing = FastOutLinearInEasing
+            ),
+        )
+    )
+    val backgroundBrush = Brush.linearGradient(
+        colors = listOf(Color(0x80ADADAD), Color(0x4DADADAD), Color(0x80ADADAD)),
+        start = Offset(translateAnimation.value + 200, translateAnimation.value + 200),
+        end = Offset(translateAnimation.value,translateAnimation.value))
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .height(50.dp)
+        .clip(RoundedCornerShape(15.dp))
+        .background(Color.White)
+        .clickable { }) {
+
+        Spacer(modifier = Modifier.weight(1f))
+        Box(contentAlignment = Alignment.CenterEnd)
+        {
+            Image(
+                painterResource(R.drawable.reward_count),
+                contentDescription = "reward_count",
+                contentScale = ContentScale.FillHeight,
+                alpha = 0.5f,
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .border(
+                        1.dp,
+                        Color.White,
+                        RoundedCornerShape(0.dp, 15.dp, 15.dp, 0.dp)
+                    )
+            )
+            Box(Modifier.matchParentSize(), contentAlignment = Alignment.CenterEnd) {
+
+            }
+        }
+
+    }
+}
+
+@Composable
+private fun TabChoice(page: Int, onClick: (page: Int) -> Unit) {
+
     Box (
         modifier = Modifier
             .fillMaxWidth()
@@ -298,17 +493,17 @@ private fun TabChoice(state : MutableState<Int>) {
                 Modifier
                     .fillMaxSize()
                     .weight(1f)
-                    .clickable { state.value = 0 }) {
+                    .clickable { onClick(0) }) {
                 Image(
                     painterResource(R.drawable.shop_tab),
                     contentDescription = "shop_tab",
                     contentScale = ContentScale.FillHeight,
-                    alpha = if (state.value == 0) 1f else 0f,
+                    alpha = if (page == 0) 1f else 0f,
                 )
                 Text (
                     text = "магазин",
                     style = MaterialTheme.typography.button,
-                    color = if (state.value == 0) Color.Black else Color.White,
+                    color = if (page == 0) Color.Black else Color.White,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -318,17 +513,17 @@ private fun TabChoice(state : MutableState<Int>) {
             Box (modifier = Modifier
                 .fillMaxSize()
                 .weight(1f)
-                .clickable { state.value = 1 }) {
+                .clickable { onClick(1) }) {
                 Image(
                     painterResource(R.drawable.reward_tab),
                     contentDescription = "reward_tab",
                     contentScale = ContentScale.FillHeight,
-                    alpha = if (state.value == 1) 1f else 0f,
+                    alpha = if (page == 1) 1f else 0f,
                 )
                 Text (
                     text = "мои награды",
                     style = MaterialTheme.typography.button,
-                    color = if (state.value == 1) Color.Black else Color.White,
+                    color = if (page == 1) Color.Black else Color.White,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -339,14 +534,9 @@ private fun TabChoice(state : MutableState<Int>) {
 }
 
 @Composable
-private fun ShopCard(name: String, cost: Int, isAvailable: Boolean, isActive: Boolean, onClick: (it: String) -> Unit) {
+private fun ShopCard(shopItem: ShopItem, isActive: Boolean, onClick: (it: ShopItem) -> Unit) {
     val backgroundBrush = when {
-//        isActive -> Brush.linearGradient(
-//            colors = listOf(Color(0xFF5E5E5E), Color(0xFF303030)),
-//            start = Offset(Offset.Infinite.x / 2, 0f),
-//            end = Offset(Offset.Infinite.x * 2 / 3,Offset.Infinite.y * 2),
-//            tileMode = TileMode.Clamp)
-        isAvailable -> Brush.linearGradient(
+        shopItem.isAvailable -> Brush.linearGradient(
             colors = listOf(Color(0xFF323232), Color(0xFF000000)),
             start = Offset(Offset.Infinite.x / 2, 0f),
             end = Offset(Offset.Infinite.x * 2 / 3,Offset.Infinite.y * 2),
@@ -372,28 +562,30 @@ private fun ShopCard(name: String, cost: Int, isAvailable: Boolean, isActive: Bo
             if (isActive) activeBordersColor else Color.Transparent,
             RoundedCornerShape(10.dp),
         )
-        .clickable { if (isAvailable) onClick(name) }) {
+        .clickable { if (shopItem.isAvailable) onClick(shopItem) }) {
         Text (
-            text = name,
+            text = shopItem.title,
             style = MaterialTheme.typography.button,
-            color = if (isAvailable) activeTextColor else notActiveTextColor,
+            fontSize = 14.sp,
+            color = if (shopItem.isAvailable) activeTextColor else notActiveTextColor,
             modifier = Modifier.padding(start = 10.dp, top = 6.dp, end = 10.dp)
         )
         Row (modifier = Modifier
             .align(Alignment.BottomEnd)
-            .padding(bottom = 6.dp, end = 10.dp),
+            .padding(bottom = 6.dp, end = 10.dp)
+            .height(20.dp),
             verticalAlignment = Alignment.CenterVertically) {
-            Text(text = "$cost",
+            Text(text = "${shopItem.cost}",
                 style = MaterialTheme.typography.subtitle1,
-                fontSize = 15.sp,
-                lineHeight = 16.sp,
-                color = if (isAvailable) activeTextColor else notActiveTextColor)
+                fontSize = 14.sp,
+                lineHeight = 14.sp,
+                color = if (shopItem.isAvailable) activeTextColor else notActiveTextColor)
             Spacer(modifier = Modifier.padding(end = 5.dp))
             Image(
                 painterResource(R.drawable.coin),
                 contentDescription = "coin",
                 contentScale = ContentScale.FillHeight,
-                alpha = if (isAvailable) 1f else 0.2f,
+                alpha = if (shopItem.isAvailable) 1f else 0.2f,
             )
         }
     }
@@ -409,6 +601,14 @@ private fun HeadSupply(heroInfo: HeroInfo?) {
         lineHeight = 24.sp,
         fontSize = 18.sp
     )
+    val animCoins = animateFloatAsState(
+        targetValue = (heroInfo?.coins ?: 0).toFloat(),
+        animationSpec = tween(
+            durationMillis = 500,
+            easing = FastOutSlowInEasing,
+        )
+    )
+
     Box (Modifier.fillMaxWidth()) {
         Image(
             painterResource(R.drawable.supply_head_bg),
@@ -441,7 +641,7 @@ private fun HeadSupply(heroInfo: HeroInfo?) {
                         )
                         Spacer(modifier = Modifier.width(5.dp))
                         Text(
-                            text = heroInfo?.coins.toString(),
+                            text = animCoins.value.toInt().toString(),
                             style = MaterialTheme.typography.h1,
                             color = Color.White,
                             modifier = Modifier.align(Alignment.CenterVertically)

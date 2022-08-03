@@ -66,7 +66,7 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
             message = null)
         if (!sharedPrefs.checkPrefExists(TOKEN)) return liveData {emit(bufResource)}
         val token = getToken()
-        return liveData(Dispatchers.IO) {
+        return liveData(Dispatchers.Default) {
             emit(Response.loading(data = null))
             try {
                 emit(Response.success(data = apiInterface.sendToken(token = token)))
@@ -77,7 +77,7 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
     }
 
     fun createHero(hero_type: String) : LiveData<Response<HeroCreateResponse>> {
-        return liveData(Dispatchers.IO) {
+        return liveData(Dispatchers.Default) {
             emit(Response.loading(data = null))
             try {
                 emit(Response.success(data = apiInterface.heroCreate(getToken(), hero_type)))
@@ -104,7 +104,7 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
     }
 
     fun getHeroInfo() : LiveData<Response<Nothing?>> {
-        return liveData(Dispatchers.IO) {
+        return liveData(Dispatchers.Default) {
             emit(Response.loading(data = null))
             try {
                 val bufResponse = Response.success(data = apiInterface.getHeroInfo(token = getToken()))
@@ -131,10 +131,55 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
     }
 
     fun setHeroSkill(skill_type: String) : LiveData<Response<SkillResponse>> {
-        return liveData(Dispatchers.IO) {
+        return liveData(Dispatchers.Default) {
             emit(Response.loading(data = null))
             try {
                 emit(Response.success(data = apiInterface.setHeroSkill(getToken, skill_type)))
+            } catch (exception: Exception) {
+                emit(Response.error(data = null, message = exception.message ?: "Error Occurred!"))
+            }
+        }
+    }
+
+    fun getShopList() : LiveData<Response<List<ShopItem>>> {
+        return liveData {
+            emit(Response.loading(data = null))
+            try {
+                val shopList = apiInterface.getShopList().shop_items
+                val coins = heroInfo.value?.coins ?: 0
+                shopList.forEach {
+                    if (heroInfo.value?.coins != null)
+                        if (it.cost <= coins) {
+                            it.isAvailable = true
+                        }
+                }
+                emit(Response.success(data = shopList))
+            } catch (exception: Exception) {
+                emit(Response.error(data = null, message = exception.message ?: "Error Occurred!"))
+            }
+        }
+    }
+
+    fun buyShopItem(shopItem: ShopItem) : LiveData<Response<ShopBuyResponse>> {
+        return liveData(Dispatchers.Default) {
+            emit(Response.loading(data = null))
+            try {
+                emit(Response.success(data = apiInterface.buyShopItem(getToken, shopItem.id)))
+            } catch (exception: Exception) {
+                emit(Response.error(data = null, message = exception.message ?: "Error Occurred!"))
+            }
+        }
+    }
+
+    fun getRewardList() : LiveData<Response<List<Reward>>> {
+        return liveData {
+            emit(Response.loading(data = null))
+            try {
+                val rewardResponse = apiInterface.getRewards(getToken)
+                if (rewardResponse.status)
+                    emit(Response.success(data = rewardResponse.rewards))
+                else
+                    emit(Response.error(data = null, message = "Rewards response status false"))
             } catch (exception: Exception) {
                 emit(Response.error(data = null, message = exception.message ?: "Error Occurred!"))
             }

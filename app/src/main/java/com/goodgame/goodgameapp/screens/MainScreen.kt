@@ -36,7 +36,6 @@ import com.goodgame.goodgameapp.navigation.clearBackStack
 
 @Composable
 fun MainScreen(navController: NavController, viewModel: GameViewModel) {
-    // TODO Уводить колонку со скроллом в прозрачность наверху
     val scrollState = rememberScrollState()
 
     val heroInfo by viewModel.heroInfo.observeAsState()

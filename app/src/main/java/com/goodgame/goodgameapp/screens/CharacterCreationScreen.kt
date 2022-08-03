@@ -266,11 +266,6 @@ private fun CharacterCard(characterModel: CharacterModel)
                 .align(Alignment.BottomCenter)
             ) {
                 Row () {
-                    val font = TextStyle(
-                        fontFamily = FontFamily(Font(R.font.micra)),
-                        fontWeight = FontWeight(400),
-                        fontSize = 12.sp
-                    )
                     Text (
                         text = "Нажми для просмотра описания",
                         style = MaterialTheme.typography.body1,
@@ -337,11 +332,6 @@ private fun CharacterCardBack(characterModel: CharacterModel)
                 .fillMaxHeight(0.50f)
             ) {
                 Row () {
-                    val font = TextStyle(
-                        fontFamily = FontFamily(Font(R.font.micra)),
-                        fontWeight = FontWeight(400),
-                        fontSize = 15.sp
-                    )
                     Text (
                         text = characterModel.description,
                         style = MaterialTheme.typography.subtitle2,

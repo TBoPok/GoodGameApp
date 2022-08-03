@@ -34,7 +34,6 @@ import com.goodgame.goodgameapp.viewmodel.GameViewModel
 @Composable
 fun DiagnosticsScreen(navController: NavController, viewModel: GameViewModel) {
     val heroInfo by viewModel.heroInfo.observeAsState()
-    val isHeroLoaded by viewModel.isHeroInfoLoaded.observeAsState()
     val isLvlsListActive = remember {mutableStateOf(false)}
 
     val tempUserStats = remember { mutableStateOf<StatsModel>(heroInfo?.stats?.copy() ?: StatsModel(0,0,0,0))}
@@ -94,11 +93,11 @@ fun DiagnosticsScreen(navController: NavController, viewModel: GameViewModel) {
     }
     if (isSkillApplyViewActive.value) {
         SkillApplyView(
-            skill_type = skillTypeApply.value,
             skillApply = viewModel.setHeroSkill(skillTypeApply.value),
             onDone = {newStats ->
                 isSkillApplyViewActive.value = false
                 if (newStats != null) {
+                    tempUserStatsPoints.value = heroInfo?.stats_points ?: 0
                     heroInfo?.stats = newStats
                     tempUserStats.value = newStats
                     tempUserStatsPoints.value = tempUserStatsPoints.value - 1
@@ -138,11 +137,11 @@ private fun HeadDiagnostic(tempUserStatsPoints: Int) {
                 )
             }
             Row(modifier = Modifier
-                .weight(0.32f)
+                .weight(0.28f)
                 .padding(horizontal = 15.dp, vertical = 15.dp), verticalAlignment = Alignment.Bottom) {
                 HasExpPoints(tempUserStatsPoints)
             }
-            Row(modifier = Modifier.weight(0.18f)) {
+            Row(modifier = Modifier.weight(0.22f), verticalAlignment = Alignment.Top) {
                 Text(
                     text = "Тут находится все показатели твоего персонажа и тут ты можешь распределять очки опыта",
                     style = MaterialTheme.typography.subtitle1,
@@ -215,20 +214,22 @@ private fun UserParametersScale(
                 .padding(end = 5.dp)) {
             CharacterParameterScale(text = text, parameter = parameter, background)
         }
-        Box(
-            Modifier
-                .height(45.dp)
-                .clickable { onClickPlus() }) {
-            Image(
-                painterResource(R.drawable.plus),
-                contentDescription = "plus",
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .height(37.dp)
-                    .width(37.dp),
-                contentScale = ContentScale.FillBounds,
-                alpha = if (isButtonActive) 1f else 0.5f
-            )
+        if (isButtonActive) {
+            Box(
+                Modifier
+                    .height(45.dp)
+                    .clickable { onClickPlus() }) {
+                Image(
+                    painterResource(R.drawable.plus),
+                    contentDescription = "plus",
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .height(37.dp)
+                        .width(37.dp),
+                    contentScale = ContentScale.FillBounds,
+//                alpha = if (isButtonActive) 1f else 0.5f
+                )
+            }
         }
     }
 }
@@ -316,7 +317,7 @@ private fun UserScores(text: String, points: Int, showCoin: Boolean) {
         color = Color.White,
         fontFamily = FontFamily(Font(R.font.micra_bold)),
         fontWeight = FontWeight.Bold,
-        fontSize = 12.sp
+        fontSize = 12.sp,
     )
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
@@ -334,7 +335,7 @@ private fun UserScores(text: String, points: Int, showCoin: Boolean) {
             Image(
                 painterResource(R.drawable.coin),
                 contentDescription = "coin",
-                contentScale = ContentScale.FillHeight,
+                contentScale = ContentScale.Inside,
             )
     }
 }
