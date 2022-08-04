@@ -32,7 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.goodgame.goodgameapp.models.ExpeditionModel
+import com.goodgame.goodgameapp.models.ExpeditionStoryModel
 import com.goodgame.goodgameapp.retrofit.Status
 import com.goodgame.goodgameapp.viewmodel.GameViewModel
 import java.util.*
@@ -145,7 +145,7 @@ private fun ContentHeadingRow(expeditionsCompleted: Int?) {
 }
 
 @Composable
-private fun ContentRow(expeditions: List<ExpeditionModel>?, totalProgress: Int?) {
+private fun ContentRow(expeditions: List<ExpeditionStoryModel>?, totalProgress: Int?) {
     val scrollState = rememberLazyListState()
     if (expeditions == null) {
         Text(

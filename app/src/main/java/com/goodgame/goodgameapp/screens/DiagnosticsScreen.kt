@@ -200,7 +200,7 @@ private fun HasExpPoints(points: Int) {
 }
 
 @Composable
-private fun UserParametersScale(
+fun UserParametersScale(
     text: String,
     parameter: Int,
     @DrawableRes background: Int,

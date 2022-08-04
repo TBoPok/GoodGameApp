@@ -398,7 +398,7 @@ fun ButtonGo(text : String = "", onClick : () -> Unit) {
     val fontText = TextStyle(
         fontFamily = FontFamily(Font(R.font.montserrat_semibold)),
         fontWeight = FontWeight.Bold,
-        lineHeight = 19.sp,
+        lineHeight = 16.sp,
         fontSize = 15.sp
     )
     Box (modifier = Modifier
@@ -419,7 +419,39 @@ fun ButtonGo(text : String = "", onClick : () -> Unit) {
             modifier = Modifier
                 .fillMaxHeight()
                 .fillMaxWidth(0.8f)
-                .padding(start = 20.dp)
+                .padding(bottom = 5.dp)
+                .align(Alignment.Center)
+        )
+    }
+}
+
+@Composable
+fun ButtonBack(text : String = "", onClick : () -> Unit) {
+    val fontText = TextStyle(
+        fontFamily = FontFamily(Font(R.font.montserrat_semibold)),
+        fontWeight = FontWeight.Bold,
+        lineHeight = 16.sp,
+        fontSize = 15.sp
+    )
+    Box (modifier = Modifier
+        .fillMaxWidth()
+        .clickable { onClick() }
+    ) {
+        Image(
+            painterResource(R.drawable.button_back),
+            contentDescription = "Go button",
+            modifier = Modifier.fillMaxWidth(),
+            contentScale = ContentScale.FillWidth,
+        )
+        Text(
+            text = text,
+            style = fontText,
+            color = Color.White,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .fillMaxHeight()
+                .fillMaxWidth(0.8f)
+                .padding(top = 5.dp)
                 .align(Alignment.Center)
         )
     }

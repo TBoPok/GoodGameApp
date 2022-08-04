@@ -25,6 +25,7 @@ sealed class Screen(val route: String) {
     object DiagnosticsScreen: Screen("DiagnosticsScreen")
     object SupplyScreen: Screen("SupplyScreen")
     object LoadingStoryScreen: Screen("LoadingStoryScreen")
+    object ExpeditionScreen: Screen("ExpeditionScreen")
 }
 
 
@@ -88,6 +89,9 @@ class AppNavGraph() {
             }
             composable(Screen.LoadingStoryScreen.route) {
                 LoadingStoryScreen(navController, gameViewModel)
+            }
+            composable(Screen.ExpeditionScreen.route) {
+                ExpeditionScreen(navController, gameViewModel)
             }
         }
     }

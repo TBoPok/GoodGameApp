@@ -4,7 +4,7 @@ data class HeroInfoResponse(
     val status : Boolean,
     val level: Int,
     val type : String,
-    val expeditions : List<ExpeditionModel>,
+    val expeditions : List<ExpeditionStoryModel>,
     val planet_status : Int?,
     val lvl_exp: Int,
     val rsp: Int,
@@ -16,7 +16,7 @@ data class HeroInfoResponse(
 data class HeroInfo(
     var hasHero: Boolean,
     var heroClass : String,
-    var expeditions : List<ExpeditionModel>,
+    var expeditions : List<ExpeditionStoryModel>,
     var total_progress : Int?,
     var level: Int,
     var lvl_exp: Int,

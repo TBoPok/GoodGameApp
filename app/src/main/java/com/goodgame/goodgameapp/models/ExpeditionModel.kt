@@ -1,10 +1,10 @@
 package com.goodgame.goodgameapp.models
 
 data class ExpeditionModel(
-    val exp : Int,
-    val rsp : Int,
-    val name : String?,
-    val number : Int,
-    val result : String,
-    val dateTime : String,
+    val number: Int,
+    val text: String,
+    val dangerLevel: String,
+    val imageUrl: String,
+    val winReward: Int,
+    val looseReward: Int,
 )

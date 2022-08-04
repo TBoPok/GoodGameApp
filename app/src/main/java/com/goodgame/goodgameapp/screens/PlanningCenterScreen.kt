@@ -180,7 +180,7 @@ private fun ActionRow(heroInfo: HeroInfo?, navController: NavController) {
                     }
 
                     if (heroInfo.has_expeditions > 0) {
-                        ButtonGo(text = "Да, исследовать") {navController.navigate(Screen.LoadingStoryScreen.route) { clearBackStack(navController,this)} }
+                        ButtonGo(text = "Да, исследовать") {navController.navigate(Screen.ExpeditionScreen.route) { clearBackStack(navController,this)} }
                         SubtitleText("Нет информации об опасности", true)
                     }
                 }

@@ -38,15 +38,7 @@ import java.io.File
 
 @Composable
 fun LoadingStoryScreen(navController: NavController, viewModel: GameViewModel) {
-    val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-
-//    val downloader = remember {
-//        mutableStateOf(PackageLoader(
-//            context = context,
-//            dataRequest = {viewModel.apiInterface.getImage(it)}
-//        ))
-//    }
     
     val loadingProgress = remember { mutableStateOf(0)}
     val message = remember { mutableStateOf("")}
@@ -85,6 +77,7 @@ fun LoadingStoryScreen(navController: NavController, viewModel: GameViewModel) {
                         }
                         Status.SUCCESS -> {
                             loadingProgress.value = 100 ?: 0
+                            //navController.navigate()
                         }
                         Status.ERROR -> {
                             message.value = it.message ?: ""
