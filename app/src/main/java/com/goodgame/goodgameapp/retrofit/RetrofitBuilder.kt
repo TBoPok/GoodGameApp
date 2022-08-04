@@ -1,10 +1,17 @@
 package com.goodgame.goodgameapp.retrofit
 
+import android.graphics.BitmapFactory
 import com.goodgame.goodgameapp.models.*
-import retrofit2.CallAdapter
+import com.google.gson.GsonBuilder
+import okhttp3.ResponseBody
+import retrofit2.Call
+import retrofit2.Callback
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
+import java.io.File
+import java.io.FileOutputStream
+
 
 interface ApiInterface {
     @GET("clubs")
@@ -42,8 +49,9 @@ interface ApiInterface {
         @Field("private_key") private_key : String,
         @Field("skill_type") skill_type : String): SkillResponse
 
-    @GET("images")
-    suspend fun getImage(@Query("image") name: String) : ByteArray
+    @Streaming
+    @GET
+    suspend fun getImage(@Url url: String?): Call<ResponseBody>
 
     @GET("hero/shop")
     suspend fun getShopList() : ShopItemResponse
@@ -57,6 +65,10 @@ interface ApiInterface {
     @FormUrlEncoded
     @POST("hero/rewards")
     suspend fun getRewards(@Field("private_key") private_key : String) : RewardResponse
+
+    @Streaming
+    @GET("https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png")
+    fun getFoofle() : Call<ResponseBody>
 }
 
 object RetrofitBuilder {
@@ -99,8 +111,16 @@ class ApiHelper(private val apiService: ApiInterface) {
     suspend fun setHeroSkill(token: String, skill_type: String) =
         apiService.setHeroSkill(private_key = token, skill_type = skill_type)
 
-    suspend fun getImage(name: String) =
-        apiService.getImage(name = name)
+    suspend fun getImage(url: String, target: File) {
+        val response = apiService.getImage(url).execute()
+        response.body()?.byteStream()?.use {
+            target.parentFile?.mkdirs()
+
+            FileOutputStream(target).use { targetOutputStream ->
+                it.copyTo(targetOutputStream)
+            }
+        } ?: throw RuntimeException("failed to download: $url")
+    }
 
     suspend fun getShopList() =
         apiService.getShopList()
@@ -110,4 +130,7 @@ class ApiHelper(private val apiService: ApiInterface) {
 
     suspend fun getRewards(token : String) =
         apiService.getRewards(private_key = token)
+
+    suspend fun getFoofle() =
+        apiService.getFoofle()
 }

@@ -27,6 +27,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.goodgame.goodgameapp.R
 import com.goodgame.goodgameapp.models.HeroInfo
+import com.goodgame.goodgameapp.navigation.Screen
+import com.goodgame.goodgameapp.navigation.clearBackStack
 import com.goodgame.goodgameapp.screens.views.ExpeditionsListView
 import com.goodgame.goodgameapp.viewmodel.GameViewModel
 
@@ -44,7 +46,7 @@ fun PlanningCenterScreen(navController: NavController, viewModel: GameViewModel)
             HeadPlanning()
         }
         Row { // Action row
-            ActionRow(heroInfo)
+            ActionRow(heroInfo, navController)
         }
         Row { // Info row
             InfoRow(
@@ -124,7 +126,7 @@ private fun HeadPlanning() {
 }
 
 @Composable
-private fun ActionRow(heroInfo: HeroInfo?) {
+private fun ActionRow(heroInfo: HeroInfo?, navController: NavController) {
 
     @Composable fun TopText(text: String) = Text(
         text = text,
@@ -178,7 +180,7 @@ private fun ActionRow(heroInfo: HeroInfo?) {
                     }
 
                     if (heroInfo.has_expeditions > 0) {
-                        ButtonGo(text = "Да, исследовать") {}
+                        ButtonGo(text = "Да, исследовать") {navController.navigate(Screen.LoadingStoryScreen.route) { clearBackStack(navController,this)} }
                         SubtitleText("Нет информации об опасности", true)
                     }
                 }

@@ -19,7 +19,7 @@ import java.util.*
 import kotlin.concurrent.thread
 import kotlin.experimental.and
 
-data class PackageModel(val name: String, val url: String, val md5: String)
+data class PackageModel(val name: String, val url: String, val md5: String?)
 
 class PackageLoader(
     private val context: Context,
@@ -60,7 +60,52 @@ class PackageLoader(
                     return@liveData
                 }
                 if (itemResponse.status == Status.ERROR) {
-                    emit(responseError(currentPercents,listPackageResponse.message ?: "Ошибка без сообщения(PackageLoader)"))
+                    emit(responseError(currentPercents,itemResponse.message ?: "Ошибка без сообщения(PackageLoader)"))
+                    return@liveData
+                }
+                if (itemResponse.data == null) {
+                    emit(responseError(currentPercents,"Объект для скачивания " + it.name + " отсуствует"))
+                    return@liveData
+                }
+                // Сохраняем
+                try {
+                    val fos = FileOutputStream(context.cacheDir.path + "/" + it.name)
+                    fos.write(itemResponse.data)
+                    fos.close()
+                }
+                catch (ex : Exception) {
+                    emit(responseError(currentPercents,ex.message.toString()))
+                    return@liveData
+                }
+                // Записываем в преференс
+                saveMd5(it)
+                // Обновим проценты
+                currentPercents += percentForItem
+                emit(responseLoadingUpdate(currentPercents))
+            }
+            responseSuccess()
+        }
+    }
+
+    fun startNoCheck(packageLoad: List<PackageModel>) : LiveData<Response<Int>> {
+        return liveData(Dispatchers.Default) {
+            var currentPercents = 0
+
+            val notLoadedPackage = packageLoad
+
+            emit(responseLoadingUpdate(20))
+            currentPercents = 20
+            val percentForItem : Int = 80 / (notLoadedPackage.size + 1)
+            // Загружаем недостающие элементы пакета
+            notLoadedPackage.forEach() {
+                // Загружаем
+                val itemResponse = getItem(it.url)
+                if (itemResponse == null) {
+                    emit(responseError(currentPercents,"Сервер не отвечает"))
+                    return@liveData
+                }
+                if (itemResponse.status == Status.ERROR) {
+                    emit(responseError(currentPercents,itemResponse.message ?: "Ошибка без сообщения(PackageLoader)"))
                     return@liveData
                 }
                 if (itemResponse.data == null) {

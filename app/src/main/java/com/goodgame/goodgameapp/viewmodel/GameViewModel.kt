@@ -2,16 +2,20 @@ package com.goodgame.goodgameapp.viewmodel
 
 import android.annotation.SuppressLint
 import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.liveData
+import android.net.Uri
+import android.util.Log
+import androidx.lifecycle.*
+import com.goodgame.goodgameapp.download.DownloadListener
+import com.goodgame.goodgameapp.download.DownloadUtil.download
 import com.goodgame.goodgameapp.models.*
 import com.goodgame.goodgameapp.retrofit.ApiHelper
 import com.goodgame.goodgameapp.retrofit.Response
 import com.goodgame.goodgameapp.retrofit.Status
 import com.goodgame.goodgameapp.sharedprefs.SharedPrefs
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.io.File
+
 
 class GameViewModel (application: Application) : AndroidViewModel(application) {
     @SuppressLint("StaticFieldLeak")
@@ -47,6 +51,8 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
         stats = StatsModel(0,0,0,0),
         coins = 0,
     ))
+
+    val loadingLiveData = MutableLiveData<Response<Int>>(Response.success(data = 0))
 
     private var getToken : String = "0"
         get() {
@@ -184,6 +190,39 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
                 emit(Response.error(data = null, message = exception.message ?: "Error Occurred!"))
             }
         }
+    }
+
+    fun getImage(url: String) {
+        val uri = Uri.parse(url).path
+        if (uri == null) {
+            loadingLiveData.postValue(Response.error(data = null, message = "Error msg getImage: can't parse url"))
+            Log.e("DOWNLOAD", "Error msg getImage: can't parse url")
+            return
+        }
+        val fileName = File(uri).name
+        val path = context.cacheDir.path + "/expeditionImages/$fileName"
+        loadingLiveData.postValue(Response.loading(data = 0))
+        download(url, path, object : DownloadListener {
+            override fun onStart() {
+                loadingLiveData.postValue(Response.loading(data = 0))
+                Log.d("DOWNLOAD", "Start")
+            }
+
+            override fun onProgress(progress: Int) {
+                loadingLiveData.postValue(Response.loading(data = progress))
+                Log.d("DOWNLOAD", "Progress: $progress")
+            }
+
+            override fun onFinish(path: String?) {
+                loadingLiveData.postValue(Response.loading(data = 100))
+                Log.d("DOWNLOAD", "Finish path: $path")
+            }
+
+            override fun onFail(errorInfo: String?) {
+                loadingLiveData.postValue(Response.error(data = null, message = errorInfo ?: "Error msg getImage: no message"))
+                Log.e("DOWNLOAD", "Error getImage msg: $errorInfo")
+            }
+        })
     }
 
     fun exitAccount () {
