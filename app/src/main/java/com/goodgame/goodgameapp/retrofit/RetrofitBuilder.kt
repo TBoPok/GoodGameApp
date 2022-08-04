@@ -49,10 +49,6 @@ interface ApiInterface {
         @Field("private_key") private_key : String,
         @Field("skill_type") skill_type : String): SkillResponse
 
-    @Streaming
-    @GET
-    suspend fun getImage(@Url url: String?): Call<ResponseBody>
-
     @GET("hero/shop")
     suspend fun getShopList() : ShopItemResponse
 
@@ -66,9 +62,6 @@ interface ApiInterface {
     @POST("hero/rewards")
     suspend fun getRewards(@Field("private_key") private_key : String) : RewardResponse
 
-    @Streaming
-    @GET("https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png")
-    fun getFoofle() : Call<ResponseBody>
 }
 
 object RetrofitBuilder {
@@ -111,17 +104,6 @@ class ApiHelper(private val apiService: ApiInterface) {
     suspend fun setHeroSkill(token: String, skill_type: String) =
         apiService.setHeroSkill(private_key = token, skill_type = skill_type)
 
-    suspend fun getImage(url: String, target: File) {
-        val response = apiService.getImage(url).execute()
-        response.body()?.byteStream()?.use {
-            target.parentFile?.mkdirs()
-
-            FileOutputStream(target).use { targetOutputStream ->
-                it.copyTo(targetOutputStream)
-            }
-        } ?: throw RuntimeException("failed to download: $url")
-    }
-
     suspend fun getShopList() =
         apiService.getShopList()
 
@@ -130,7 +112,4 @@ class ApiHelper(private val apiService: ApiInterface) {
 
     suspend fun getRewards(token : String) =
         apiService.getRewards(private_key = token)
-
-    suspend fun getFoofle() =
-        apiService.getFoofle()
 }
