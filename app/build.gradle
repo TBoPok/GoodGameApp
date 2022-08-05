@@ -93,8 +93,7 @@ dependencies {
     // accompanist
     implementation "com.google.accompanist:accompanist-pager:$accompanist_version"
     implementation "com.google.accompanist:accompanist-pager-indicators:$accompanist_version"
-
-    // Load image with progress
-//    implementation 'me.jessyan:progressmanager:1.5.0'
+    // Coil
+    implementation "io.coil-kt:coil-compose:1.4.0"
 
 }

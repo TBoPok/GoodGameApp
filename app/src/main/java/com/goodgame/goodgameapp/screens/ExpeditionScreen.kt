@@ -1,14 +1,15 @@
 package com.goodgame.goodgameapp.screens
 
+import android.content.Context
+import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.*
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -19,12 +20,14 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -33,53 +36,46 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.goodgame.goodgameapp.R
 import com.goodgame.goodgameapp.models.ExpeditionModel
 import com.goodgame.goodgameapp.models.HeroInfo
+import com.goodgame.goodgameapp.retrofit.Status
 import com.goodgame.goodgameapp.viewmodel.GameViewModel
+import java.io.File
+import coil.*
+import coil.compose.rememberImagePainter
 
 private enum class ExpeditionScreenState {
-    LOADING,
+    LOADING_EXPEDITION,
+    LOADING_IMAGE,
     ACTION,
     RESULT_LOADING,
-    RESULT
+    RESULT,
+    ERROR,
 }
 
 @Composable
 fun ExpeditionScreen(navController: NavController, viewModel: GameViewModel) {
-    val expeditionState = remember { mutableStateOf(ExpeditionScreenState.LOADING)}
+    val expeditionState = remember { mutableStateOf(ExpeditionScreenState.LOADING_EXPEDITION)}
+    val errorMessage = remember { mutableStateOf("")}
+    val loadingProgress = remember { mutableStateOf(0)}
     val heroInfo by viewModel.heroInfo.observeAsState()
 //    val expeditionModel = remember { mutableStateOf<ExpeditionModel?>(null)}
-    val expeditionModel = remember { mutableStateOf<ExpeditionModel?>(
-        ExpeditionModel(3, "A time-delay-integration (TDI) image sensor is a special linear\n" +
-                "pushbroom imaging sensor with the structure of a planar array.\n" +
-                "It can achieve a high signal-to-noise ratio (SNR) by multiple\n" +
-                "sampling and accumulating the signal from the same ground\n" +
-                "object [1]. It is especially appropriate for the case of low illu-\n" +
-                "mination and high relative velocity and is broadly applied in the\n" +
-                "fields of satellite remote sensing, machine vision, document\n" +
-                "scanning, etc. The TDI functionality is more easily realized\n" +
-                "in a charge-coupled device (CCD) than CMOS because charge\n" +
-                "signals can be transferred intrinsically and accumulated without\n" +
-                "noise in the imaging process [2]. However, the CCD requires\n" +
-                "high-voltage operation, and it is difficult to integrate signal\n" +
-                "processing circuits. On the other hand, with the rapid develop-\n" +
-                "ment of integrated circuit manufacturing technology, the", "Сложная", "", 100, 100)
-    )}
+    val expeditionModel = remember { mutableStateOf<ExpeditionModel?> (null)}
+
+
     Box(modifier = Modifier
         .fillMaxSize()
         .background(Color.Black)) {
         when (expeditionState.value) {
-            ExpeditionScreenState.LOADING -> {
-                LoadingExpedition {
-                    expeditionState.value = ExpeditionScreenState.ACTION
-                }
+            ExpeditionScreenState.LOADING_EXPEDITION, ExpeditionScreenState.LOADING_IMAGE -> {
+                LoadingExpedition()
             }
-            ExpeditionScreenState.ACTION -> {
+            ExpeditionScreenState.ACTION, ExpeditionScreenState.RESULT_LOADING -> {
                 if (expeditionModel.value == null) {
-
+                    expeditionState.value = ExpeditionScreenState.ERROR
+                    errorMessage.value = "expeditionModel = null"
                 } else {
                     ShowExpedition(
                         expeditionModel = expeditionModel.value!!,
@@ -88,18 +84,68 @@ fun ExpeditionScreen(navController: NavController, viewModel: GameViewModel) {
                         onCancel = {})
                 }
             }
-            ExpeditionScreenState.RESULT_LOADING -> {
-                TODO()
-            }
             ExpeditionScreenState.RESULT -> {
                 TODO()
             }
+            ExpeditionScreenState.ERROR -> {
+
+            }
         }
+    }
+
+    when (expeditionState.value) {
+        ExpeditionScreenState.LOADING_EXPEDITION -> {
+            viewModel.getExpedition().observe(LocalLifecycleOwner.current) {
+                when(it.status) {
+                    Status.SUCCESS -> {
+                        if (it.data?.status == true) {
+                            expeditionModel.value = it.data
+                            expeditionState.value = ExpeditionScreenState.LOADING_IMAGE
+                        } else {
+                            expeditionState.value = ExpeditionScreenState.ERROR
+                            errorMessage.value = it.data?.info ?: "Error no msg getExpedition, data.status = false"
+                        }
+                    }
+                    Status.ERROR -> {
+                        expeditionState.value = ExpeditionScreenState.ERROR
+                        errorMessage.value = it.message ?: "Error no msg getExpedition, status = error"
+                    }
+                    Status.LOADING -> {}
+                }
+            }
+        }
+        ExpeditionScreenState.LOADING_IMAGE -> {
+            if (expeditionModel.value?.image != null)
+                viewModel.getImage(expeditionModel.value!!.image!!)
+
+            viewModel.loadingLiveData.observe(LocalLifecycleOwner.current) {
+                when(it.status) {
+                    Status.LOADING -> {
+                        loadingProgress.value = it.data ?: 0
+                    }
+                    Status.SUCCESS -> {
+                        loadingProgress.value = 100 ?: 0
+                        expeditionState.value = ExpeditionScreenState.ACTION
+                    }
+                    Status.ERROR -> {
+                        expeditionState.value = ExpeditionScreenState.ERROR
+                        errorMessage.value = it.message ?: "Error loading image, no msg"
+                    }
+                }
+            }
+        }
+        ExpeditionScreenState.RESULT_LOADING -> {
+
+        }
+        ExpeditionScreenState.RESULT -> {
+
+        }
+        else -> {}
     }
 }
 
 @Composable
-private fun LoadingExpedition(onDone: () -> Unit) {
+private fun LoadingExpedition() {
     val transition = rememberInfiniteTransition() // animate infinite times
     val alphaAnimation = transition.animateFloat( //animate the transition
         initialValue = 1f,
@@ -116,7 +162,7 @@ private fun LoadingExpedition(onDone: () -> Unit) {
     Box(
         Modifier
             .fillMaxSize()
-            .clickable { onDone() }) {
+            .clickable { }) {
         Image(
             painterResource(R.drawable.loading_expedition_bg),
             contentDescription = "first_screen",
@@ -166,7 +212,7 @@ private fun ShowExpedition(expeditionModel: ExpeditionModel, heroInfo: HeroInfo?
                 modifier = Modifier.fillMaxWidth()
             )
             Text (
-                text = "Экспедиция " + expeditionModel.number.toString(),
+                text = "Экспедиция ",
                 style = headStyle,
                 color = Color.White,
                 modifier = Modifier
@@ -174,19 +220,23 @@ private fun ShowExpedition(expeditionModel: ExpeditionModel, heroInfo: HeroInfo?
                     .align(Alignment.BottomStart))
         }
         Text (
-            text = expeditionModel.text,
+            text = expeditionModel.description,
             style = MaterialTheme.typography.subtitle2,
             color = Color(0xFFD1D1D1),
             modifier = Modifier.padding(horizontal = 15.dp)
         )
         Spacer(modifier = Modifier.height(30.dp))
-        Image(
-            painterResource(R.drawable.diagn_head_bg),
-            contentDescription = "first_screen",
-            contentScale = ContentScale.FillWidth,
-            modifier = Modifier.fillMaxWidth()
-        )
-        when(expeditionModel.dangerLevel) {
+        val path = getPathFromUrl(expeditionModel.image, LocalContext.current)
+        if (path != "") {
+            val cacheFile = rememberImagePainter (data = File(path))
+            Image(
+                painter = cacheFile,
+                contentDescription = "first_screen",
+                contentScale = ContentScale.FillWidth,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+        when(expeditionModel.difficulty) {
             "Сложная" -> Image(
                 painterResource(R.drawable.danger_1),
                 contentDescription = "first_screen",
@@ -240,7 +290,7 @@ private fun ShowExpedition(expeditionModel: ExpeditionModel, heroInfo: HeroInfo?
                             modifier = Modifier.padding(horizontal = 15.dp)
                         )
                         Text (
-                            text = "+" + expeditionModel.winReward.toString(),
+                            text = "+" + expeditionModel.win_rsp.toString(),
                             style = resultStyle,
                             color = Color(0x80FFFFFF),
                             modifier = Modifier.padding(start = 15.dp)
@@ -266,7 +316,7 @@ private fun ShowExpedition(expeditionModel: ExpeditionModel, heroInfo: HeroInfo?
                             modifier = Modifier.padding(horizontal = 15.dp)
                         )
                         Text(
-                            text = "-" + expeditionModel.winReward.toString(),
+                            text = "-" + expeditionModel.lose_rsp.toString(),
                             style = resultStyle,
                             color = Color(0x80FFFFFF),
                             modifier = Modifier.padding(start = 15.dp)
@@ -296,6 +346,12 @@ private fun ShowExpedition(expeditionModel: ExpeditionModel, heroInfo: HeroInfo?
     }
 }
 
+fun getPathFromUrl(url: String?, context: Context): String {
+    val uri = Uri.parse(url).path ?: return ""
+    val fileName = File(uri).name
+    return context.cacheDir.path + "/expeditionImages/$fileName"
+}
+
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun MyParameters(heroInfo: HeroInfo?) {
@@ -306,8 +362,9 @@ private fun MyParameters(heroInfo: HeroInfo?) {
             modifier = Modifier
                 .padding(horizontal = 15.dp)
                 .height(45.dp)
-                .background(Color(0x802B2B2B))
                 .fillMaxWidth()
+                .clip(RoundedCornerShape(15.dp))
+                .background(Color(0x802B2B2B))
                 .clickable { state = !state }) {
             Row (verticalAlignment = Alignment.CenterVertically){
                 Text (
@@ -332,6 +389,7 @@ private fun MyParameters(heroInfo: HeroInfo?) {
             Box(
                 Modifier
                     .padding(horizontal = 15.dp)
+                    .clip(RoundedCornerShape(15.dp))
                     .background(Color(0x802B2B2B)))
             {
                 Column(Modifier.padding(horizontal = 10.dp)) {

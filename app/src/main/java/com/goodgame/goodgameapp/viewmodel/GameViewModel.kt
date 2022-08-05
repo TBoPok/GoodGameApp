@@ -225,6 +225,17 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
         })
     }
 
+    fun getExpedition() : LiveData<Response<ExpeditionModel>> {
+        return liveData(Dispatchers.Default) {
+            emit(Response.loading(data = null))
+            try {
+                emit(Response.success(data = apiInterface.getExpedition(getToken)))
+            } catch (exception: Exception) {
+                emit(Response.error(data = null, message = exception.message ?: "Error Occurred!"))
+            }
+        }
+    }
+
     fun exitAccount () {
         sharedPrefs.setPref(TOKEN, "0")
     }

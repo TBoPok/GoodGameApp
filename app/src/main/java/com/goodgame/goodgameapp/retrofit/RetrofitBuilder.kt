@@ -62,6 +62,15 @@ interface ApiInterface {
     @POST("hero/rewards")
     suspend fun getRewards(@Field("private_key") private_key : String) : RewardResponse
 
+    @FormUrlEncoded
+    @POST("hero/expedition/start")
+    suspend fun getExpedition(@Field("private_key") private_key : String) : ExpeditionModel
+
+    @FormUrlEncoded
+    @POST("hero/expedition/result")
+    suspend fun getExpeditionResult(
+        @Field("private_key") private_key : String,
+        @Field("choice") choice: String) : ExpeditionModel
 }
 
 object RetrofitBuilder {
@@ -112,4 +121,7 @@ class ApiHelper(private val apiService: ApiInterface) {
 
     suspend fun getRewards(token : String) =
         apiService.getRewards(private_key = token)
+
+    suspend fun getExpedition(token : String) =
+        apiService.getExpedition(private_key = token)
 }
