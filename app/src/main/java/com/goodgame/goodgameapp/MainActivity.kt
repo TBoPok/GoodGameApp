@@ -1,5 +1,6 @@
 package com.goodgame.goodgameapp
 
+import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.DisplayMetrics
@@ -7,6 +8,7 @@ import android.util.Log
 import android.util.Log.DEBUG
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -23,6 +25,7 @@ import com.goodgame.goodgameapp.retrofit.RetrofitBuilder
 import com.goodgame.goodgameapp.ui.theme.GoodGameAppTheme
 import com.goodgame.goodgameapp.viewmodel.GameViewModel
 import com.goodgame.goodgameapp.viewmodel.LoginViewModel
+import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.systemuicontroller.SystemUiController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
@@ -31,6 +34,8 @@ class MainActivity : ComponentActivity() {
     lateinit var loginViewModel : LoginViewModel
     lateinit var gameViewModel : GameViewModel
 
+    @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
+    @OptIn(ExperimentalAnimationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         adjustFontScale2(resources.configuration)
@@ -46,7 +51,7 @@ class MainActivity : ComponentActivity() {
                 val apiInterface = ApiHelper(RetrofitBuilder.apiService)
                 loginViewModel.apiInterface = apiInterface
                 gameViewModel.apiInterface = apiInterface
-                val navController = rememberNavController()
+                val navController = rememberAnimatedNavController()
                 val appNavGraph = AppNavGraph()
                 Scaffold (
                     topBar = {},

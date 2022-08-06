@@ -152,6 +152,8 @@ fun ExpeditionScreen(navController: NavController, viewModel: GameViewModel) {
         ExpeditionScreenState.LOADING_IMAGE -> {
             if (expedition.value?.image != null)
                 viewModel.getImage(expedition.value!!.image!!)
+            else
+                expeditionState.value = ExpeditionScreenState.ACTION
 
             viewModel.loadingLiveData.observe(LocalLifecycleOwner.current) {
                 when(it.status) {
@@ -177,7 +179,7 @@ fun ExpeditionScreen(navController: NavController, viewModel: GameViewModel) {
                     }
                     Status.SUCCESS -> {
                         expeditionResultBuf.value = it.data
-                        expeditionState.value = ExpeditionScreenState.RESULT
+                        expeditionState.value = ExpeditionScreenState.HERO_INFO_UPDATE
                     }
                     Status.ERROR -> {
                         expeditionState.value = ExpeditionScreenState.ERROR
@@ -384,14 +386,14 @@ private fun ShowExpedition(
                         contentScale = ContentScale.FillWidth,
                         modifier = Modifier.fillMaxWidth()
                     )
-                    "Легкая" -> Image(
+                    "Низкая" -> Image(
                         painterResource(R.drawable.danger_3),
                         contentDescription = "first_screen",
                         contentScale = ContentScale.FillWidth,
                         modifier = Modifier.fillMaxWidth()
                     )
                     else -> Image(
-                        painterResource(R.drawable.godji_logo),
+                        painterResource(R.drawable.danger_1),
                         contentDescription = "first_screen",
                         contentScale = ContentScale.FillWidth,
                         modifier = Modifier.fillMaxWidth()
@@ -578,6 +580,7 @@ private fun ShowExpedition(
 }
 
 fun getPathFromUrl(url: String?, context: Context): String {
+    if (url == null) return ""
     val uri = Uri.parse(url).path ?: return ""
     val fileName = File(uri).name
     return context.cacheDir.path + "/expeditionImages/$fileName"

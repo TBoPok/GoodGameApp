@@ -178,7 +178,7 @@ fun ActionRowSupply(
     rewardClick: (reward: String) -> Unit,
     howToActivate: () -> Unit) {
 
-    val pagesState = rememberPagerState(pageCount = 2, initialPage = initTab)
+    val pagesState = rememberPagerState(initialPage = initTab)
     val coroutineScope = rememberCoroutineScope()
     val newPage = remember { mutableStateOf(initTab)}
     val setPage: (page: Int) -> Unit = {
@@ -207,7 +207,7 @@ fun ActionRowSupply(
             TabChoice(pagesState.currentPage, onClick = setPage)
             Spacer(modifier = Modifier.height(10.dp))
 
-            HorizontalPager(state = pagesState, verticalAlignment = Alignment.Top) { page ->
+            HorizontalPager(state = pagesState, verticalAlignment = Alignment.Top, count = 2) { page ->
                 when (page) {
                     0 -> {
                         ShopList(

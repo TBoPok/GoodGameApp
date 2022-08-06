@@ -44,7 +44,7 @@ import kotlinx.coroutines.delay
 fun IntroScreen (navController: NavController, viewModel: GameViewModel, isCharCreate: Boolean) {
     val isCharCreated = remember { mutableStateOf(isCharCreate)}
     val firstImage = remember {mutableStateOf(true)}
-    val pagesState = rememberPagerState(pageCount = 6)
+    val pagesState = rememberPagerState()
 
     val ticks = remember { mutableStateOf(0) }
     LaunchedEffect(Unit) {
@@ -92,7 +92,7 @@ fun IntroScreen (navController: NavController, viewModel: GameViewModel, isCharC
     Column(modifier = Modifier.fillMaxSize()) {
         // Card row
         Row (modifier = Modifier.weight(1f).padding(top = 30.dp)) {
-            HorizontalPager(state = pagesState) { page ->
+            HorizontalPager(state = pagesState, count = 6) { page ->
                 when (page) {
                     0 -> {
                         IntroCard(drawableRes = R.drawable.op1) {
@@ -343,7 +343,7 @@ if (firstImage.value == true) {
                 }
                 Row () {
                     MetallButton(
-                        isActive = mutableStateOf(true),
+                        isActive = remember {mutableStateOf(true)},
                         activeText = "Продолжить",
                         height = 50.dp) {
                         onClick()

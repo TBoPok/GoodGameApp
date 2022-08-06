@@ -1,17 +1,16 @@
 package com.goodgame.goodgameapp.navigation
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import androidx.navigation.NavOptionsBuilder
-import androidx.navigation.NavType
+import androidx.navigation.*
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.navArgument
 import com.goodgame.goodgameapp.screens.MainScreen
 import com.goodgame.goodgameapp.screens.*
 import com.goodgame.goodgameapp.viewmodel.GameViewModel
 import com.goodgame.goodgameapp.viewmodel.LoginViewModel
+import com.google.accompanist.navigation.animation.AnimatedNavHost
+import com.google.accompanist.navigation.animation.composable
 
 sealed class Screen(val route: String) {
     object SplashScreen : Screen("SplashScreen")
@@ -38,59 +37,75 @@ fun clearBackStack(navController: NavController, navOptionsBuilder: NavOptionsBu
 }
 
 class AppNavGraph() {
+    @OptIn(ExperimentalAnimationApi::class)
     @Composable
     fun InitGraph(navController: NavHostController, loginViewModel: LoginViewModel, gameViewModel: GameViewModel) {
-        NavHost(
+        AnimatedNavHost(
             navController = navController,
             startDestination = Screen.SplashScreen.route
         ) {
-            composable(Screen.SplashScreen.route) {
+            composable(
+                route = Screen.SplashScreen.route) {
                 SplashScreen(navController, gameViewModel)
             }
-            composable(Screen.LoginScreenNew.route) {
+            composable(route = Screen.LoginScreenNew.route) {
                 LoginScreenNew(navController, loginViewModel)
             }
-            composable(Screen.RegistrationScreen.route) {
+            composable(route = Screen.RegistrationScreen.route) {
                 RegistrationScreen(navController, loginViewModel)
             }
-            composable(Screen.LoginCodeConfirmScreen.route) {
+            composable(route = Screen.LoginCodeConfirmScreen.route) {
                 LoginCodeConfirmScreen(navController, loginViewModel)
             }
-            composable(Screen.MainScreen.route) {
+            composable(route = Screen.MainScreen.route,
+                enterTransition = { fadeIn(animationSpec = tween(200)) },
+                exitTransition = {
+//                    when (targetState.destination.route) {
+//                        Screen.DiagnosticsScreen.route,
+//                        Screen.PlanningCenterScreen.route,
+//                        Screen.SupplyScreen.route ->
+//                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(300))
+//                        else -> null
+//                    }
+                    null
+                }) {
                 MainScreen(navController, gameViewModel)
             }
-            composable(
-                "${Screen.IntroScreen.route}/{isCharCreate}",
+            composable(route = "${Screen.IntroScreen.route}/{isCharCreate}",
                 arguments = listOf(navArgument("isCharCreate") {
                     type = NavType.BoolType
                 })
             ) {
                 IntroScreen(navController, gameViewModel, it.arguments?.getBoolean("isCharCreate") ?: true)
             }
-            composable(Screen.CharacterCreationScreen.route) {
+            composable(route = Screen.CharacterCreationScreen.route) {
                 CharacterCreationScreen(navController, gameViewModel)
             }
-            composable(Screen.PlanningCenterScreen.route) {
+            composable(route = Screen.PlanningCenterScreen.route,
+                //enterTransition = { slideIntoContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(300))})
+            ){
                 PlanningCenterScreen(navController, gameViewModel)
             }
-            composable(Screen.DiagnosticsScreen.route) {
+            composable(route = Screen.DiagnosticsScreen.route,
+//                enterTransition = { slideIntoContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(300))}
+            ) {
                 DiagnosticsScreen(navController, gameViewModel)
             }
-            composable(
-                "${Screen.SupplyScreen.route}/{tab}",
+            composable(route = "${Screen.SupplyScreen.route}/{tab}",
                 arguments = listOf(navArgument("tab") {
                     type = NavType.IntType
-                })
+                },),
+//                enterTransition = { slideIntoContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(300))}
             ) {
                 SupplyScreen(navController, gameViewModel, it.arguments?.getInt("tab") ?: 0)
             }
-            composable(Screen.SupplyScreen.route) {
+            composable(route = Screen.SupplyScreen.route) {
                 SupplyScreen(navController, gameViewModel)
             }
-            composable(Screen.LoadingStoryScreen.route) {
+            composable(route = Screen.LoadingStoryScreen.route) {
                 LoadingStoryScreen(navController, gameViewModel)
             }
-            composable(Screen.ExpeditionScreen.route) {
+            composable(route = Screen.ExpeditionScreen.route) {
                 ExpeditionScreen(navController, gameViewModel)
             }
         }

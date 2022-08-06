@@ -223,13 +223,14 @@ private fun ExpeditionCard(index: Int, result: String, name: String, coins: Int,
                     color = Color(0x80FFFFFF))
             }
 
-            Spacer(modifier = Modifier.padding(bottom = 5.dp))
-            Text(name.uppercase(Locale.getDefault()),
-                style = fontMicra,
-                color = Color.White)
+//            Spacer(modifier = Modifier.padding(bottom = 5.dp))
+//            Text(name.uppercase(Locale.getDefault()),
+//                style = fontMicra,
+//                color = Color.White)
             Spacer(modifier = Modifier.padding(bottom = 10.dp))
             Row {
-                Text(text = "+$coins",
+                val sign = if (coins < 0) "" else "+"
+                Text(text = "$sign$coins",
                     style = fontSubtitle,
                     color = Color(0x80FFFFFF))
                 Spacer(modifier = Modifier.padding(end = 5.dp))
