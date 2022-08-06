@@ -61,6 +61,7 @@ private enum class ExpeditionScreenState {
     LOADING_IMAGE,
     ACTION,
     RESULT_LOADING,
+    HERO_INFO_UPDATE,
     RESULT,
     ERROR,
 }
@@ -73,6 +74,7 @@ fun ExpeditionScreen(navController: NavController, viewModel: GameViewModel) {
     val loadingProgress = remember { mutableStateOf(0)}
     val heroInfo by viewModel.heroInfo.observeAsState()
     val expedition = remember { mutableStateOf<Expedition?> (null)}
+    val expeditionResultBuf = remember { mutableStateOf<ExpeditionResult?> (null)}
     val expeditionResult = remember { mutableStateOf<ExpeditionResult?> (null)}
     val userAction = remember { mutableStateOf("")}
 
@@ -87,6 +89,7 @@ fun ExpeditionScreen(navController: NavController, viewModel: GameViewModel) {
         listOf(
             ExpeditionScreenState.ACTION,
             ExpeditionScreenState.RESULT_LOADING,
+            ExpeditionScreenState.HERO_INFO_UPDATE,
             ExpeditionScreenState.RESULT
         )) {
 
@@ -173,12 +176,29 @@ fun ExpeditionScreen(navController: NavController, viewModel: GameViewModel) {
 
                     }
                     Status.SUCCESS -> {
-                        expeditionResult.value = it.data
+                        expeditionResultBuf.value = it.data
                         expeditionState.value = ExpeditionScreenState.RESULT
                     }
                     Status.ERROR -> {
                         expeditionState.value = ExpeditionScreenState.ERROR
                         errorMessage.value = it.message ?: "Error loading image, no msg"
+                    }
+                }
+            }
+        }
+        ExpeditionScreenState.HERO_INFO_UPDATE -> {
+            viewModel.getHeroInfo(initial = false).observe(LocalLifecycleOwner.current) {
+                when (it.status) {
+                    Status.SUCCESS -> {
+                        expeditionResult.value = expeditionResultBuf.value
+                        expeditionState.value = ExpeditionScreenState.RESULT
+                    }
+                    Status.ERROR -> {
+                        expeditionState.value = ExpeditionScreenState.ERROR
+                        errorMessage.value = it.message ?: "Error loading image, no msg"
+                    }
+                    Status.LOADING -> {
+
                     }
                 }
             }

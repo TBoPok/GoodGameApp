@@ -20,6 +20,8 @@ data class HeroInfo(
     var total_progress : Int?,
     var level: Int,
     var lvl_exp: Int,
+    var new_level: Boolean,
+    var expedition_passed: Boolean,
     var next_lvl_need : Int,
     var has_expeditions: Int,
     var coins: Int,

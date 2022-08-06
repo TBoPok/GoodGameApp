@@ -49,6 +49,8 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
         stats_points = 0,
         stats = StatsModel(0,0,0,0),
         coins = 0,
+        new_level = false,
+        expedition_passed = false
     ))
 
     val loadingLiveData = MutableLiveData<Response<Int>>(Response.loading(data = 0))
@@ -108,7 +110,7 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
         sharedPrefs.setPref(EXPED_COMPLETED, heroInfo.value?.total_progress ?: 0)
     }
 
-    fun getHeroInfo() : LiveData<Response<Nothing?>> {
+    fun getHeroInfo(initial: Boolean = true) : LiveData<Response<Nothing?>> {
         return liveData(Dispatchers.Default) {
             emit(Response.loading(data = null))
             try {
@@ -124,7 +126,9 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
                     hasHero              = heroInfo.value?.hasHero ?: false,
                     stats_points         = bufResponse.data.stats_points,
                     stats                = bufResponse.data.stats,
-                    coins                = bufResponse.data.rsp
+                    coins                = bufResponse.data.rsp,
+                    new_level            = !initial && bufResponse.data.level > heroInfo.value!!.level,
+                    expedition_passed    = !initial && bufResponse.data.expeditions.size > heroInfo.value!!.expeditions.size
                 )
                 heroInfo.postValue(bufHeroInfo)
                 isHeroInfoLoaded.postValue(true)
