@@ -394,16 +394,20 @@ fun LobbyButton(drawableRes : Int, text : String = "", onClick : () -> Unit) {
 }
 
 @Composable
-fun ButtonGo(text : String = "", onClick : () -> Unit) {
+fun ButtonGo(
+    text : String = "",
+    isActive: Boolean = true,
+    modifier: Modifier = Modifier,
+    onClick : () -> Unit) {
     val fontText = TextStyle(
         fontFamily = FontFamily(Font(R.font.montserrat_semibold)),
         fontWeight = FontWeight.Bold,
         lineHeight = 16.sp,
         fontSize = 15.sp
     )
-    Box (modifier = Modifier
+    Box (modifier = modifier
         .fillMaxWidth()
-        .clickable { onClick() }
+        .clickable { if (isActive) onClick() }
     ) {
         Image(
             painterResource(R.drawable.button_go),
@@ -426,16 +430,16 @@ fun ButtonGo(text : String = "", onClick : () -> Unit) {
 }
 
 @Composable
-fun ButtonBack(text : String = "", onClick : () -> Unit) {
+fun ButtonBack(text : String = "", isActive: Boolean, modifier: Modifier = Modifier, onClick : () -> Unit) {
     val fontText = TextStyle(
         fontFamily = FontFamily(Font(R.font.montserrat_semibold)),
         fontWeight = FontWeight.Bold,
         lineHeight = 16.sp,
         fontSize = 15.sp
     )
-    Box (modifier = Modifier
+    Box (modifier = modifier
         .fillMaxWidth()
-        .clickable { onClick() }
+        .clickable { if(isActive) onClick() }
     ) {
         Image(
             painterResource(R.drawable.button_back),

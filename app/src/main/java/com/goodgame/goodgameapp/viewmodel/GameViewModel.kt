@@ -13,7 +13,6 @@ import com.goodgame.goodgameapp.retrofit.Response
 import com.goodgame.goodgameapp.retrofit.Status
 import com.goodgame.goodgameapp.sharedprefs.SharedPrefs
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.io.File
 
 
@@ -52,7 +51,7 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
         coins = 0,
     ))
 
-    val loadingLiveData = MutableLiveData<Response<Int>>(Response.success(data = 0))
+    val loadingLiveData = MutableLiveData<Response<Int>>(Response.loading(data = 0))
 
     private var getToken : String = "0"
         get() {
@@ -201,31 +200,45 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
         }
         val fileName = File(uri).name
         val path = context.cacheDir.path + "/expeditionImages/$fileName"
+        if (File(path).exists()) {
+            Log.d("DOWNLOAD", "File exits")
+            loadingLiveData.postValue(Response.success(data = 100))
+            return
+        }
         loadingLiveData.postValue(Response.loading(data = 0))
-        download(url, path, object : DownloadListener {
-            override fun onStart() {
-                loadingLiveData.postValue(Response.loading(data = 0))
-                Log.d("DOWNLOAD", "Start")
-            }
+        try {
+            download(url, path, object : DownloadListener {
+                override fun onStart() {
+                    loadingLiveData.postValue(Response.loading(data = 0))
+                    Log.d("DOWNLOAD", "Start")
+                }
 
-            override fun onProgress(progress: Int) {
-                loadingLiveData.postValue(Response.loading(data = progress))
-                Log.d("DOWNLOAD", "Progress: $progress")
-            }
+                override fun onProgress(progress: Int) {
+                    loadingLiveData.postValue(Response.loading(data = progress))
+                    Log.d("DOWNLOAD", "Progress: $progress")
+                }
 
-            override fun onFinish(path: String?) {
-                loadingLiveData.postValue(Response.loading(data = 100))
-                Log.d("DOWNLOAD", "Finish path: $path")
-            }
+                override fun onFinish(path: String?) {
+                    loadingLiveData.postValue(Response.success(data = 100))
+                    Log.d("DOWNLOAD", "Finish path: $path")
+                }
 
-            override fun onFail(errorInfo: String?) {
-                loadingLiveData.postValue(Response.error(data = null, message = errorInfo ?: "Error msg getImage: no message"))
-                Log.e("DOWNLOAD", "Error getImage msg: $errorInfo")
-            }
-        })
+                override fun onFail(errorInfo: String?) {
+                    loadingLiveData.postValue(
+                        Response.error(
+                            data = null,
+                            message = errorInfo ?: "Error msg getImage: no message"
+                        )
+                    )
+                    Log.e("DOWNLOAD", "Error getImage msg: $errorInfo")
+                }
+            })
+        } catch (exception: Exception) {
+            Log.e("DOWNLOAD", "Error getImage msg: ${exception.message}")
+        }
     }
 
-    fun getExpedition() : LiveData<Response<ExpeditionModel>> {
+    fun getExpedition() : LiveData<Response<Expedition>> {
         return liveData(Dispatchers.Default) {
             emit(Response.loading(data = null))
             try {
@@ -234,6 +247,20 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
                 emit(Response.error(data = null, message = exception.message ?: "Error Occurred!"))
             }
         }
+    }
+
+    fun getExpeditionResult(choice: String) : LiveData<Response<ExpeditionResult>> {
+        return if (choice == "Do" || choice == "Run" )
+            liveData(Dispatchers.Default) {
+                emit(Response.loading(data = null))
+                try {
+                    emit(Response.success(data = apiInterface.getExpeditionResult(getToken, choice)))
+                } catch (exception: Exception) {
+                    emit(Response.error(data = null, message = exception.message ?: "Error Occurred!"))
+                }
+            }
+        else
+            liveData {emit(Response.error(data = null, message = "Wrong choice type"))}
     }
 
     fun exitAccount () {

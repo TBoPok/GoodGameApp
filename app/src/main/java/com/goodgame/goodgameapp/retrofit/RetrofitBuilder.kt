@@ -1,16 +1,9 @@
 package com.goodgame.goodgameapp.retrofit
 
-import android.graphics.BitmapFactory
 import com.goodgame.goodgameapp.models.*
-import com.google.gson.GsonBuilder
-import okhttp3.ResponseBody
-import retrofit2.Call
-import retrofit2.Callback
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
-import java.io.File
-import java.io.FileOutputStream
 
 
 interface ApiInterface {
@@ -64,13 +57,13 @@ interface ApiInterface {
 
     @FormUrlEncoded
     @POST("hero/expedition/start")
-    suspend fun getExpedition(@Field("private_key") private_key : String) : ExpeditionModel
+    suspend fun getExpedition(@Field("private_key") private_key : String) : Expedition
 
     @FormUrlEncoded
     @POST("hero/expedition/result")
     suspend fun getExpeditionResult(
         @Field("private_key") private_key : String,
-        @Field("choice") choice: String) : ExpeditionModel
+        @Field("choice") choice: String) : ExpeditionResult
 }
 
 object RetrofitBuilder {
@@ -124,4 +117,7 @@ class ApiHelper(private val apiService: ApiInterface) {
 
     suspend fun getExpedition(token : String) =
         apiService.getExpedition(private_key = token)
+
+    suspend fun getExpeditionResult(token : String, choice: String) =
+        apiService.getExpeditionResult(private_key = token, choice = choice)
 }

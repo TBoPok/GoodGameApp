@@ -41,7 +41,8 @@ fun PlanningCenterScreen(navController: NavController, viewModel: GameViewModel)
 
     Column(modifier = Modifier
         .verticalScroll(scrollState)
-        .fillMaxSize()) {
+        .fillMaxSize()
+        .background(Color.Black)) {
         Row { // Head row
             HeadPlanning()
         }

@@ -1,6 +1,6 @@
 package com.goodgame.goodgameapp.models
 
-data class ExpeditionModel(
+data class Expedition(
     val status: Boolean,
     val description: String,
     val difficulty: String,
