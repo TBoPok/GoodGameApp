@@ -174,10 +174,18 @@ private fun ActionRow(heroInfo: HeroInfo?, navController: NavController) {
                         heroInfo.has_expeditions == 1 -> {
                             TopText("Тебе сейчас доступна 1 экспедиция")
                         }
-                        heroInfo.has_expeditions > 1 -> {
+                        heroInfo.has_expeditions in (2..4) -> {
                             TopText("Тебе сейчас доступны " + heroInfo.has_expeditions + " экспедиции")
                         }
-                        else -> TopText("Экспедиция недоступна")
+                        heroInfo.has_expeditions > 4 -> {
+                            TopText("Тебе сейчас доступно " + heroInfo.has_expeditions + " экспедиций")
+                        }
+                        else -> Box(Modifier.fillMaxWidth().clickable {  }) {
+                            TopText(
+                                "Экспедиция недоступна\n"
+                                        + "Приходи завтра в 10:00 по МСК и отправляйся в новое путешествие!\n"
+                                        + "Или нажми здесь, чтобы узнать другие способы исследовать планету GG-265"
+                            ) }
                     }
 
                     if (heroInfo.has_expeditions > 0) {

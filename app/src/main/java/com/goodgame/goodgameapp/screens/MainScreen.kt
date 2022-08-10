@@ -326,9 +326,10 @@ private fun ActionMain(heroInfo: HeroInfo?, navController: NavController) {
                     Spacer(modifier = Modifier.padding(vertical = 5.dp))
                 }
             }
+
             Row {
                 Box (modifier = Modifier
-                    .weight(0.65f)
+                    .weight(1f)
                     .height(50.dp)
                     .padding(end = 5.dp)
                     .background(Color(0x802B2B2B))
@@ -351,18 +352,6 @@ private fun ActionMain(heroInfo: HeroInfo?, navController: NavController) {
                             modifier = Modifier.padding(start = 5.dp)
                         )
                     }
-                }
-                Box (modifier = Modifier
-                    .weight(0.45f)
-                    .height(50.dp)
-                    .background(Color(0x802B2B2B))
-                    .clip(RoundedCornerShape(5.dp)),
-                    contentAlignment = Alignment.Center) {
-                    Text(
-                        text = "Обучение",
-                        style = MaterialTheme.typography.button,
-                        color = Color.White,
-                    )
                 }
             }
         }

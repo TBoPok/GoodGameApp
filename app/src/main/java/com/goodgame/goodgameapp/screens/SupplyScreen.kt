@@ -202,7 +202,7 @@ fun ActionRowSupply(
                 .padding(horizontal = 14.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(25.dp))
+            Spacer(modifier = Modifier.height(35.dp))
 
             TabChoice(pagesState.currentPage, onClick = setPage)
             Spacer(modifier = Modifier.height(10.dp))
@@ -318,7 +318,10 @@ private fun RewardsList(placeholder: Boolean, rewardItems: List<Reward>, rewardC
     val scrollState = rememberLazyListState()
     LazyColumn(state = scrollState, modifier = Modifier.padding(bottom = 60.dp)) {
         if (placeholder)
-            repeat(8){ item { RewardCardPlaceholder()} }
+            repeat(8){ item {
+                RewardCardPlaceholder()
+                Spacer(modifier = Modifier.height(15.dp))
+            } }
         else
             items(items = rewardItems) {
                 RewardCard(it.reward,1, onClick = rewardClicked)
@@ -493,13 +496,9 @@ private fun TabChoice(page: Int, onClick: (page: Int) -> Unit) {
                 Modifier
                     .fillMaxSize()
                     .weight(1f)
+                    .clip (RoundedCornerShape(15.dp))
+                    .background(if (page == 0) Color(0xFFBFEFFC) else Color.Transparent)
                     .clickable { onClick(0) }) {
-                Image(
-                    painterResource(R.drawable.shop_tab),
-                    contentDescription = "shop_tab",
-                    contentScale = ContentScale.FillHeight,
-                    alpha = if (page == 0) 1f else 0f,
-                )
                 Text (
                     text = "магазин",
                     style = MaterialTheme.typography.button,
@@ -513,13 +512,9 @@ private fun TabChoice(page: Int, onClick: (page: Int) -> Unit) {
             Box (modifier = Modifier
                 .fillMaxSize()
                 .weight(1f)
+                .clip (RoundedCornerShape(15.dp))
+                .background(if (page == 1) Color(0xFFBFEFFC) else Color.Transparent)
                 .clickable { onClick(1) }) {
-                Image(
-                    painterResource(R.drawable.reward_tab),
-                    contentDescription = "reward_tab",
-                    contentScale = ContentScale.FillHeight,
-                    alpha = if (page == 1) 1f else 0f,
-                )
                 Text (
                     text = "мои награды",
                     style = MaterialTheme.typography.button,

@@ -87,10 +87,13 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
     }
 
     fun createHero(hero_type: String) : LiveData<Response<HeroCreateResponse>> {
+        Log.d("createHero", "hero_type: $hero_type")
         return liveData(Dispatchers.Default) {
             emit(Response.loading(data = null))
             try {
-                emit(Response.success(data = apiInterface.heroCreate(getToken(), hero_type)))
+                val bufResponse = Response.success(data = apiInterface.heroCreate(getToken(), hero_type))
+                emit(bufResponse)
+                Log.d("createHero", "Response: ${bufResponse.data}")
             } catch (exception: Exception) {
                 emit(Response.error(data = null, message = exception.message.toString()))
             }
@@ -136,6 +139,7 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
                 heroInfo.postValue(bufHeroInfo)
                 isHeroInfoLoaded.postValue(true)
                 emit(Response.success(data = null))
+                Log.d("heroInfo", bufHeroInfo.toString())
             } catch (exception: Exception) {
                 emit(Response.error(data = null, message = exception.message ?: "Error Occurred!"))
             }
