@@ -75,6 +75,9 @@ fun CharacterCreationScreen(navController: NavController, viewModel: GameViewMod
             fontSize = 12.sp
         )
     }
+    var chosenHeroType by remember {
+        mutableStateOf("")
+    }
     val pagerState = rememberPagerState()
 
     Column(modifier = Modifier
@@ -156,31 +159,34 @@ fun CharacterCreationScreen(navController: NavController, viewModel: GameViewMod
         Row (modifier = Modifier.padding(horizontal = 30.dp, vertical = 12.dp)) { // ApprButton(isActive = mutableStateOf(true), activeText = "Выбрать его", height = 55.dp) {
             MetallButton(isActive = mutableStateOf(true), activeText = "Выбрать его") {
                 loadingViewActive.value = true
-          
+                chosenHeroType = characterTypes[pagerState.currentIndex].id_name
             }
         }
     }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
     if (loadingViewActive.value) {
         LoadingView()
-        val chosenHeroType = characterTypes[pagerState.currentIndex].id_name
-        viewModel.createHero(chosenHeroType).observe(LocalLifecycleOwner.current) {
-            when (it.status) {
-                Status.SUCCESS -> {
-                    loadingViewActive.value = false
-                    if (it.data?.status == true)
-                        navController.navigate(Screen.SplashScreen.route) {
-                            clearBackStack(navController, this)
+        LaunchedEffect(loadingViewActive.value) {
+            viewModel.createHero(chosenHeroType).observe(lifecycleOwner) {
+                when (it.status) {
+                    Status.SUCCESS -> {
+                        loadingViewActive.value = false
+                        if (it.data?.status == true)
+                            navController.navigate(Screen.SplashScreen.route) {
+                                clearBackStack(navController, this)
+                            }
+                        else {
+                            isErrorMessageActive.value = true
+                            errorMessage.value = it.data?.info ?: "Error create hero, no message"
                         }
-                    else {
-                        isErrorMessageActive.value = true
-                        errorMessage.value = it.data?.info ?: "Error create hero, no message"
                     }
+                    Status.ERROR -> {
+                        isErrorMessageActive.value = true
+                        errorMessage.value = it.message ?: "Error create hero, no message"
+                    }
+                    Status.LOADING -> {}
                 }
-                Status.ERROR -> {
-                    isErrorMessageActive.value = true
-                    errorMessage.value = it.message ?: "Error create hero, no message"
-                }
-                Status.LOADING -> {}
             }
         }
     }
