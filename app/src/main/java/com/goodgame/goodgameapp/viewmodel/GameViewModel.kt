@@ -12,7 +12,12 @@ import com.goodgame.goodgameapp.retrofit.ApiHelper
 import com.goodgame.goodgameapp.retrofit.Response
 import com.goodgame.goodgameapp.retrofit.Status
 import com.goodgame.goodgameapp.sharedprefs.SharedPrefs
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.upstream.RawResourceDataSource
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 
 
@@ -52,8 +57,6 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
         new_level = false,
         expedition_passed = false
     ))
-
-    val loadingLiveData = MutableLiveData<Response<Int>>(Response.loading(data = 0))
 
     private var getToken : String = "0"
         get() {
@@ -195,7 +198,8 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun getImage(url: String) {
+    fun getImage(url: String, loadingLiveData: MutableLiveData<Response<Int>>) {
+        loadingLiveData.postValue(Response.loading(data = 0))
         val uri = Uri.parse(url).path
         if (uri == null) {
             loadingLiveData.postValue(Response.error(data = null, message = "Error msg getImage: can't parse url"))

@@ -38,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
+import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
 import com.goodgame.goodgameapp.R
 import com.goodgame.goodgameapp.models.Expedition
@@ -50,11 +51,13 @@ import coil.size.OriginalSize
 import com.goodgame.goodgameapp.models.ExpeditionResult
 import com.goodgame.goodgameapp.navigation.Screen
 import com.goodgame.goodgameapp.navigation.clearBackStack
+import com.goodgame.goodgameapp.retrofit.Response
 import com.goodgame.goodgameapp.screens.views.ErrorAlert
 import com.goodgame.goodgameapp.screens.views.FadeTransition
 import com.goodgame.goodgameapp.screens.views.FadeTransitionFloat
 import com.goodgame.goodgameapp.screens.views.MetallButton
 import kotlinx.coroutines.coroutineScope
+import kotlin.math.exp
 
 private enum class ExpeditionScreenState {
     LOADING_EXPEDITION,
@@ -128,87 +131,97 @@ fun ExpeditionScreen(navController: NavController, viewModel: GameViewModel) {
             })
     }
 
-    when (expeditionState.value) {
-        ExpeditionScreenState.LOADING_EXPEDITION -> {
-            viewModel.getExpedition().observe(LocalLifecycleOwner.current) {
-                when(it.status) {
-                    Status.SUCCESS -> {
-                        if (it.data?.status == true) {
-                            expedition.value = it.data
-                            expeditionState.value = ExpeditionScreenState.LOADING_IMAGE
-                        } else {
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    LaunchedEffect(expeditionState.value) {
+        when (expeditionState.value) {
+            ExpeditionScreenState.LOADING_EXPEDITION -> {
+                viewModel.getExpedition().observe(lifecycleOwner) {
+                    when (it.status) {
+                        Status.SUCCESS -> {
+                            if (it.data?.status == true) {
+                                expedition.value = it.data
+                                expeditionState.value = ExpeditionScreenState.LOADING_IMAGE
+                            } else {
+                                expeditionState.value = ExpeditionScreenState.ERROR
+                                errorMessage.value = it.data?.info
+                                    ?: "Error no msg getExpedition, data.status = false"
+                            }
+                        }
+                        Status.ERROR -> {
                             expeditionState.value = ExpeditionScreenState.ERROR
-                            errorMessage.value = it.data?.info ?: "Error no msg getExpedition, data.status = false"
+                            errorMessage.value =
+                                it.message ?: "Error no msg getExpedition, status = error"
+                        }
+                        Status.LOADING -> {}
+                    }
+                }
+            }
+            ExpeditionScreenState.LOADING_IMAGE -> {
+                val loadingLiveData = MutableLiveData<Response<Int>>(Response.loading(data = 0))
+
+                if (expedition.value?.image != null)
+                    viewModel.getImage(expedition.value!!.image!!, loadingLiveData)
+                else
+                    expeditionState.value = ExpeditionScreenState.ACTION
+
+
+                loadingLiveData.observe(lifecycleOwner) {
+                    when (it.status) {
+                        Status.LOADING -> {
+                            loadingProgress.value = it.data ?: 0
+                        }
+                        Status.SUCCESS -> {
+                            loadingProgress.value = 100
+                            expeditionState.value = ExpeditionScreenState.ACTION
+                        }
+                        Status.ERROR -> {
+                            expeditionState.value = ExpeditionScreenState.ERROR
+                            errorMessage.value = it.message ?: "Error loading image, no msg"
                         }
                     }
-                    Status.ERROR -> {
-                        expeditionState.value = ExpeditionScreenState.ERROR
-                        errorMessage.value = it.message ?: "Error no msg getExpedition, status = error"
-                    }
-                    Status.LOADING -> {}
                 }
             }
-        }
-        ExpeditionScreenState.LOADING_IMAGE -> {
-            if (expedition.value?.image != null)
-                viewModel.getImage(expedition.value!!.image!!)
-            else
-                expeditionState.value = ExpeditionScreenState.ACTION
+            ExpeditionScreenState.RESULT_LOADING -> {
+                viewModel.getExpeditionResult(userAction.value)
+                    .observe(lifecycleOwner) {
+                        when (it.status) {
+                            Status.LOADING -> {
 
-            viewModel.loadingLiveData.observe(LocalLifecycleOwner.current) {
-                when(it.status) {
-                    Status.LOADING -> {
-                        loadingProgress.value = it.data ?: 0
+                            }
+                            Status.SUCCESS -> {
+                                expeditionResultBuf.value = it.data
+                                expeditionState.value = ExpeditionScreenState.HERO_INFO_UPDATE
+                            }
+                            Status.ERROR -> {
+                                expeditionState.value = ExpeditionScreenState.ERROR
+                                errorMessage.value = it.message ?: "Error loading image, no msg"
+                            }
+                        }
                     }
-                    Status.SUCCESS -> {
-                        loadingProgress.value = 100
-                        expeditionState.value = ExpeditionScreenState.ACTION
-                    }
-                    Status.ERROR -> {
-                        expeditionState.value = ExpeditionScreenState.ERROR
-                        errorMessage.value = it.message ?: "Error loading image, no msg"
-                    }
-                }
             }
-        }
-        ExpeditionScreenState.RESULT_LOADING -> {
-            viewModel.getExpeditionResult(userAction.value).observe(LocalLifecycleOwner.current) {
-                when(it.status) {
-                    Status.LOADING -> {
+            ExpeditionScreenState.HERO_INFO_UPDATE -> {
+                viewModel.getHeroInfo(initial = false).observe(lifecycleOwner) {
+                    when (it.status) {
+                        Status.SUCCESS -> {
+                            expeditionResult.value = expeditionResultBuf.value
+                            expeditionState.value = ExpeditionScreenState.RESULT
+                        }
+                        Status.ERROR -> {
+                            expeditionState.value = ExpeditionScreenState.ERROR
+                            errorMessage.value = it.message ?: "Error loading image, no msg"
+                        }
+                        Status.LOADING -> {
 
-                    }
-                    Status.SUCCESS -> {
-                        expeditionResultBuf.value = it.data
-                        expeditionState.value = ExpeditionScreenState.HERO_INFO_UPDATE
-                    }
-                    Status.ERROR -> {
-                        expeditionState.value = ExpeditionScreenState.ERROR
-                        errorMessage.value = it.message ?: "Error loading image, no msg"
+                        }
                     }
                 }
             }
-        }
-        ExpeditionScreenState.HERO_INFO_UPDATE -> {
-            viewModel.getHeroInfo(initial = false).observe(LocalLifecycleOwner.current) {
-                when (it.status) {
-                    Status.SUCCESS -> {
-                        expeditionResult.value = expeditionResultBuf.value
-                        expeditionState.value = ExpeditionScreenState.RESULT
-                    }
-                    Status.ERROR -> {
-                        expeditionState.value = ExpeditionScreenState.ERROR
-                        errorMessage.value = it.message ?: "Error loading image, no msg"
-                    }
-                    Status.LOADING -> {
+            ExpeditionScreenState.RESULT -> {
 
-                    }
-                }
             }
+            else -> {}
         }
-        ExpeditionScreenState.RESULT -> {
-
-        }
-        else -> {}
     }
 }
 
@@ -355,6 +368,7 @@ private fun ShowExpedition(
                 Text(
                     text = expedition.description,
                     style = MaterialTheme.typography.subtitle2,
+                    lineHeight = 19.sp,
                     color = Color(0xFFD1D1D1),
                     modifier = Modifier.padding(horizontal = 15.dp)
                 )
@@ -547,6 +561,26 @@ private fun ShowExpedition(
                                     .align(Alignment.BottomCenter)
                             )
                         }
+                        if (expeditionResult.result == "lose") {
+                            Image(
+                                painterResource(R.drawable.expedition_failure),
+                                contentDescription = null,
+                                contentScale = ContentScale.FillWidth,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .align(Alignment.BottomCenter)
+                            )
+                        }
+                        if (expeditionResult.result == "run") {
+                            Image(
+                                painterResource(R.drawable.expedition_cancel),
+                                contentDescription = null,
+                                contentScale = ContentScale.FillWidth,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .align(Alignment.BottomCenter)
+                            )
+                        }
                     }
                 }
                 else {
@@ -562,16 +596,39 @@ private fun ShowExpedition(
                 Text(
                     text = expeditionResult.description,
                     style = MaterialTheme.typography.subtitle2,
+                    lineHeight = 19.sp,
                     color = Color(0xFFD1D1D1),
                     modifier = Modifier.padding(horizontal = 15.dp)
                 )
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(10.dp))
+                val micra_bold = TextStyle(
+                    color = Color.White,
+                    fontFamily = FontFamily(Font(R.font.micra_bold)),
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = 19.sp,
+                    fontSize = 15.sp
+                )
+                Text(
+                    text = "ТЫ ПОЛУЧИЛ ${expeditionResult.exp} ОЧКОВ ОПЫТА И ${expeditionResult.rsp} ОЧКОВ ИССЛЕДОВАНИЯ",
+                    style = micra_bold,
+                    modifier = Modifier.padding(horizontal = 15.dp)
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = "Планета исследована на ${expeditionResult.planet_status}%",
+                    style = MaterialTheme.typography.subtitle2,
+                    lineHeight = 19.sp,
+                    color = Color(0xFFD1D1D1),
+                    modifier = Modifier.padding(horizontal = 15.dp)
+                )
+                Spacer(modifier = Modifier.height(15.dp))
                 MetallButton(
                     isActive = remember { mutableStateOf(true) },
                     activeText = "Вернуться на базу"
                 ) {
                     onClose()
                 }
+                Spacer(modifier = Modifier.height(10.dp))
                 loadingState.value = ""
             }
         }

@@ -44,6 +44,20 @@ fun <T> FadeTransition(state: MutableState<T>, visibleState: T, content: @Compos
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
+fun <T> FadeTransition(state: Boolean, visibleState: T, content: @Composable () -> Unit) {
+    val transition = updateTransition(state, label = "")
+    transition.AnimatedVisibility(
+        visible = { targetSelected -> targetSelected == visibleState
+        },
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        content()
+    }
+}
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
 fun FadeTransitionFloat(state: Float, visibleState: Float, content: @Composable () -> Unit) {
     val transition = updateTransition(state, label = "")
     transition.AnimatedVisibility(

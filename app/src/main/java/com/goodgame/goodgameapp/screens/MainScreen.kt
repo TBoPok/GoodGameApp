@@ -28,11 +28,16 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
 import androidx.navigation.NavController
 import com.goodgame.goodgameapp.R
+import com.goodgame.goodgameapp.models.ExpeditionStoryModel
 import com.goodgame.goodgameapp.viewmodel.GameViewModel
 import com.goodgame.goodgameapp.models.HeroInfo
 import com.goodgame.goodgameapp.models.characterTypes
 import com.goodgame.goodgameapp.navigation.Screen
 import com.goodgame.goodgameapp.navigation.clearBackStack
+import com.goodgame.goodgameapp.screens.views.ExpeditionCompletedView
+import com.goodgame.goodgameapp.screens.views.FadeTransition
+import com.goodgame.goodgameapp.screens.views.LevelUpView
+import kotlinx.coroutines.delay
 
 @Composable
 fun MainScreen(navController: NavController, viewModel: GameViewModel) {
@@ -54,6 +59,27 @@ fun MainScreen(navController: NavController, viewModel: GameViewModel) {
             ActionMain(navController = navController, heroInfo = heroInfo)
         }
     }
+    var showExpeditionSuccess by remember { mutableStateOf(heroInfo?.expedition_passed ?: false)}
+    var showLvlUp by remember { mutableStateOf(heroInfo?.new_level ?: false)}
+
+//    FadeTransition(state = showLvlUp && !showExpeditionSuccess, visibleState = true) {
+    if (showLvlUp && !showExpeditionSuccess) {
+        LevelUpView(heroInfo) {
+            showLvlUp = false
+            heroInfo?.new_level = false
+            navController.navigate(Screen.DiagnosticsScreen.route)
+        }
+    }
+
+//    FadeTransition(state = showExpeditionSuccess, visibleState = true) {
+    if (showExpeditionSuccess) {
+        ExpeditionCompletedView(heroInfo?.expeditions!!.last()) {
+            heroInfo?.expedition_passed = false
+            showExpeditionSuccess = false
+        }
+    }
+
+
 }
 
 @Composable
@@ -67,12 +93,18 @@ private fun HeadMain(username: String?, heroInfo: HeroInfo?, navController: NavC
         )
         Column(modifier = Modifier.matchParentSize()) {
             Row (Modifier.weight(.08f)) { } // Empty row
-            Row (Modifier.weight(.094f).fillMaxWidth()) {
+            Row (
+                Modifier
+                    .weight(.094f)
+                    .fillMaxWidth()) {
                 ExperienceGraphics(heroInfo = heroInfo) {
                     navController.navigate(Screen.DiagnosticsScreen.route)
                 }
             } // Experience row
-            Row (Modifier.padding(horizontal = 30.dp).weight(0.07f),
+            Row (
+                Modifier
+                    .padding(horizontal = 30.dp)
+                    .weight(0.07f),
                 verticalAlignment = Alignment.CenterVertically) {
                 UserInfoRow(username, heroInfo?.heroClass)
             }
@@ -152,7 +184,10 @@ fun ExperienceGraphics(heroInfo: HeroInfo?, onClick: () -> Unit = {}) {
             start = (lvlImgSize.value.width * 0.43f).toInt().toDp(),
             end = (lvlNextImgSize.value.width * 0.68f).toInt().toDp())
     }
-    Box(Modifier.fillMaxWidth().clickable { onClick() }, contentAlignment = Alignment.Center) {
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }, contentAlignment = Alignment.Center) {
         Box (modifier = Modifier
             .fillMaxHeight(0.65f)
             .fillMaxWidth()
@@ -439,7 +474,7 @@ fun ButtonBack(text : String = "", isActive: Boolean, modifier: Modifier = Modif
     )
     Box (modifier = modifier
         .fillMaxWidth()
-        .clickable { if(isActive) onClick() }
+        .clickable { if (isActive) onClick() }
     ) {
         Image(
             painterResource(R.drawable.button_back),
