@@ -49,6 +49,7 @@ fun SplashScreen(navController: NavHostController, viewModel : GameViewModel) {
     val refreshKey = remember { mutableStateOf(true)}
     fun MutableState<Boolean>.trigger() { value = !value } // refreshKey trigger
 
+//    navController.navigate(Screen.CharacterCreationScreen.route)
     LaunchedEffect(refreshKey.value) {
         if (splashScreenState.value == SplashScreenState.WAIT_RESPONSE)
             viewModel.checkToken().observe(lifecycleOwner, Observer {

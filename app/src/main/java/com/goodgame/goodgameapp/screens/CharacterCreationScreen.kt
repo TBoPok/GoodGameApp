@@ -173,7 +173,7 @@ fun CharacterCreationScreen(navController: NavController, viewModel: GameViewMod
                         }
                     else {
                         isErrorMessageActive.value = true
-                        errorMessage.value = it.message ?: "Error create hero, no message"
+                        errorMessage.value = it.data?.info ?: "Error create hero, no message"
                     }
                 }
                 Status.ERROR -> {
