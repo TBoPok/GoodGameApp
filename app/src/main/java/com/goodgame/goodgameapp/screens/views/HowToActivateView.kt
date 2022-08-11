@@ -31,7 +31,7 @@ fun HowToActivateView(onClose: () -> Unit) {
                     text = "Как активировать покупку?",
                     style = MaterialTheme.typography.h1,
                     fontSize = 25.sp,
-                    color = Color.Black,
+                    color = Color(0xFF010101),
                 )
                 Spacer(modifier = Modifier.height(15.dp))
                 Text(
@@ -42,7 +42,7 @@ fun HowToActivateView(onClose: () -> Unit) {
                             "5. Готово! Можно наслаждаться:)",
                     style = MaterialTheme.typography.subtitle2,
                     lineHeight = 19.sp,
-                    color = Color.Black
+                    color = Color(0xFF010101)
                 )
                 Spacer(modifier = Modifier.height(15.dp))
                 MetallButton(isActive = mutableStateOf(true), height = 55.dp, activeText = "Понятно") {

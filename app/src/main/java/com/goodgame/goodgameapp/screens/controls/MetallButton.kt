@@ -45,7 +45,7 @@ fun MetallButton(isActive: MutableState<Boolean>,
 
     if (isActive.value == true) {
         backgroundActive.value = true
-        textColor.value = Color.Black
+        textColor.value = Color(0xFF010101)
         text.value = activeText
     }
     else {

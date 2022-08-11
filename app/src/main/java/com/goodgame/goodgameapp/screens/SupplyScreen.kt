@@ -105,7 +105,7 @@ fun SupplyScreen(navController: NavController, viewModel: GameViewModel, initTab
     Box(
         Modifier
             .fillMaxSize()
-            .background(Color.Black))
+            .background(Color(0xFF010101)))
     Column(modifier = Modifier
 //        .verticalScroll(scrollState)
         .fillMaxHeight()
@@ -126,7 +126,7 @@ fun SupplyScreen(navController: NavController, viewModel: GameViewModel, initTab
     }
     Box (modifier = Modifier
         .padding(start = 20.dp, top = 20.dp)
-        .background(Color.Black)
+        .background(Color(0xFF010101))
         .clickable { navController.navigateUp() }) {
         Row {
             Image(
@@ -395,7 +395,7 @@ private fun RewardCard(name: String, count: Int, onClick: (reward: String) -> Un
             text = name,
             style = MaterialTheme.typography.body1,
             fontSize = 15.sp,
-            color = Color.Black,
+            color = Color(0xFF010101),
             modifier = Modifier
                 .padding(start = 15.dp)
                 .align(Alignment.CenterVertically)
@@ -502,7 +502,7 @@ private fun TabChoice(page: Int, onClick: (page: Int) -> Unit) {
                 Text (
                     text = "магазин",
                     style = MaterialTheme.typography.button,
-                    color = if (page == 0) Color.Black else Color.White,
+                    color = if (page == 0) Color(0xFF010101) else Color.White,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -518,7 +518,7 @@ private fun TabChoice(page: Int, onClick: (page: Int) -> Unit) {
                 Text (
                     text = "мои награды",
                     style = MaterialTheme.typography.button,
-                    color = if (page == 1) Color.Black else Color.White,
+                    color = if (page == 1) Color(0xFF010101) else Color.White,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .fillMaxWidth()

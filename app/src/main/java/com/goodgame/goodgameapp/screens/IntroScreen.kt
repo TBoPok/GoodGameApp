@@ -37,6 +37,7 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalPagerApi::class, kotlin.time.ExperimentalTime::class)
@@ -88,21 +89,30 @@ fun IntroScreen (navController: NavController, viewModel: GameViewModel, isCharC
         textAlign = textAlign,
         fontSize = 14.sp)
 
+    val coroutineScope = rememberCoroutineScope()
     // Content column
     Column(modifier = Modifier.fillMaxSize()) {
         // Card row
-        Row (modifier = Modifier.weight(1f).padding(top = 30.dp)) {
+        Row (modifier = Modifier
+            .weight(1f)
+            .padding(top = 30.dp)) {
             HorizontalPager(state = pagesState, count = 6) { page ->
                 when (page) {
                     0 -> {
-                        IntroCard(drawableRes = R.drawable.op1) {
+                        IntroCard(drawableRes = R.drawable.op1, onClick = {
+                            coroutineScope.launch {
+                            pagesState.animateScrollToPage(page = page + 1)
+                        }}) {
                             cardText(
                                 text = "В середине 21 века человечество разработало искусственный интеллект EIDOS. ИИ тайно превратился в мощную и самосознающую систему, целью которой было уничтожение вида homo sapiens.",
                             )
                         }
                     }
                     1 -> {
-                        IntroCard(drawableRes = R.drawable.op2) {
+                        IntroCard(drawableRes = R.drawable.op2, onClick = {
+                            coroutineScope.launch {
+                                pagesState.animateScrollToPage(page = page + 1)
+                            }}) {
                             cardText(
                                 text = "В 2149 году города Земли лежат в руинах после глобальной войны, экосистема планеты разрушена. Последние выжившие прячутся от дронов-убийц в руинах городов. Лишь немногие сохранили надежду на возрождение новой человеческой цивилизации. Некоторые считают их спасителями. Кто-то говорит, что они сумасшедшие.",
                             )
@@ -110,7 +120,10 @@ fun IntroScreen (navController: NavController, viewModel: GameViewModel, isCharC
                     }
                     2 -> {
                         IntroCard(
-                            drawableRes = R.drawable.op3,
+                            drawableRes = R.drawable.op3, onClick = {
+                                coroutineScope.launch {
+                                    pagesState.animateScrollToPage(page = page + 1)
+                                }}
                         ) {
                             cardText(
                                 text = "Организованные остатки выживших людей отправляют новейшую роботизированную модель андроида, под названием Godji , на исследование планет земного типа. В случае успеха, одна из них может стать новым домом для человеческой цивилизации. Первый выбор падает на планету GG-265...",
@@ -118,7 +131,10 @@ fun IntroScreen (navController: NavController, viewModel: GameViewModel, isCharC
                         }
                     }
                     3 -> {
-                        IntroCard( drawableRes = R.drawable.op4,) {
+                        IntroCard( drawableRes = R.drawable.op4, onClick = {
+                            coroutineScope.launch {
+                                pagesState.animateScrollToPage(page = page + 1)
+                            }}) {
                             Row () {
                                 cardText(
                                     text = "Эта каменистая планета изучалась только автоматическими зондами, данные о прямом исследовании отсутствуют. Она обладает высокой плотности водородно-гелиевой атмосферой; поверхность планеты покрыта красным грунтом. Возможно наличие воды и жизни.",
@@ -135,7 +151,10 @@ fun IntroScreen (navController: NavController, viewModel: GameViewModel, isCharC
                         }
                     }
                     4 -> {
-                        IntroCard(drawableRes = R.drawable.op5,) {
+                        IntroCard(drawableRes = R.drawable.op5, onClick = {
+                            coroutineScope.launch {
+                                pagesState.animateScrollToPage(page = page + 1)
+                            }}) {
                             cardText(
                                 text = "Godji приземляется на неизвестную планету GG-265 и  приступает к её исследованию. Для этого ему необходимо совершать вылазки полные опасностей и неожиданностей. \n\n Успех исследований зависит от навыков персонажа и грамотно принятых решений. Выбор всегда за вами...",
                             )
@@ -189,7 +208,9 @@ if (firstImage.value == true) {
             painterResource(R.drawable.openpage),
             contentDescription = "first_screen",
             contentScale = ContentScale.Crop,
-            modifier = Modifier.matchParentSize().clickable { firstImage.value = false }
+            modifier = Modifier
+                .matchParentSize()
+                .clickable { firstImage.value = false }
         )
     }
     Column(modifier = Modifier.fillMaxSize()) {
@@ -215,13 +236,14 @@ if (firstImage.value == true) {
 
 
     @Composable
-    private fun IntroCard(@DrawableRes drawableRes: Int, content: @Composable () -> Unit) {
+    private fun IntroCard(@DrawableRes drawableRes: Int, onClick: () -> Unit = {}, content: @Composable () -> Unit) {
         val cardSize = remember {mutableStateOf(Size.Zero)}
         val cardPadding = with(LocalDensity.current) {
             ((cardSize.value.width - (cardSize.value.height / 1.9823529411764f)) / 2).toInt().toDp()
         }
         Box(modifier = Modifier
             .fillMaxSize()
+            .clickable { onClick() }
             .onGloballyPositioned { coords -> cardSize.value = coords.size.toSize() },
         ) {
             Image(

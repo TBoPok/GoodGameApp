@@ -51,7 +51,7 @@ fun ErrorAlert(errorMessage : String,
                     text = "Что-то пошло не так",
                     style = MaterialTheme.typography.h1,
                     fontSize = 25.sp,
-                    color = Color.Black,
+                    color = Color(0xFF010101),
                 )
                 Spacer(modifier = Modifier.height(15.dp))
 
@@ -59,7 +59,7 @@ fun ErrorAlert(errorMessage : String,
                     text =  errorMessage,
                     style = MaterialTheme.typography.subtitle2,
                     lineHeight = 19.sp,
-                    color = Color.Black
+                    color = Color(0xFF010101)
                 )
                 Spacer(modifier = Modifier.height(15.dp))
                 Row () {
@@ -108,7 +108,7 @@ private fun CancelButton(isActive: MutableState<Boolean>, height: Dp, onClick: (
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
                 .alpha(1f),
-            color = if (isActive.value) Color.Black else Color(0x80000000),
+            color = if (isActive.value) Color(0xFF010101) else Color(0x80000000),
             style = MaterialTheme.typography.button
         )
     }

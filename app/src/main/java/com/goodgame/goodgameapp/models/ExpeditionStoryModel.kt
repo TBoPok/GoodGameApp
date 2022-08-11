@@ -6,5 +6,5 @@ data class ExpeditionStoryModel(
     val name : String?,
     val number : Int,
     val result : String,
-    val dateTime : String,
+    val dateTime : String?,
 )

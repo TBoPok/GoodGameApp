@@ -1,11 +1,11 @@
 package com.goodgame.goodgameapp.screens.views
 
 import android.net.Uri
+import android.util.Log
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.core.DurationBasedAnimationSpec
-import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
@@ -42,6 +43,7 @@ import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.StyledPlayerView
 import com.google.android.exoplayer2.upstream.RawResourceDataSource
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.newCoroutineContext
 import java.io.File
@@ -66,9 +68,42 @@ fun ExpeditionCompletedView(expedition: ExpeditionStoryModel, closeEvent: () -> 
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
     )
+
+    val context = LocalContext.current
+    val video = remember {
+        when (expedition.result) {
+            "win" -> R.raw.coin_1
+            "lose" -> R.raw.coin_2
+            else -> R.raw.exp
+        }
+    }
+    val exoPlayer = remember {
+        ExoPlayer.Builder(context).build().apply {
+            val uri = RawResourceDataSource.buildRawResourceUri(video)
+            setMediaItem(MediaItem.fromUri(uri))
+            repeatMode = Player.REPEAT_MODE_ONE
+            prepare()
+            playWhenReady = true
+        }
+    }
+    // player view
+    DisposableEffect(exoPlayer) {
+        onDispose {
+            // relase player when no longer needed
+            exoPlayer.release()
+        }
+    }
+    var showView by remember { mutableStateOf(false)}
+    LaunchedEffect(true) {
+        delay(200)
+        showView = true
+    }
+
+
     Box(
         Modifier
             .fillMaxSize()
+            .alpha(if (showView) 1f else 0f)
             .padding(15.dp)) {
         Box(
             modifier = Modifier
@@ -80,16 +115,12 @@ fun ExpeditionCompletedView(expedition: ExpeditionStoryModel, closeEvent: () -> 
                     Color(0xFFA7FAE9),
                     RoundedCornerShape(15.dp)
                 )
-                .background(Color.Black)
+                .background(Color(0xFF010101))
 
         ) {
             Column() {
-                val video = when (expedition.result) {
-                    "win" -> R.raw.coin_1
-                    "lose" -> R.raw.coin_2
-                    else -> R.raw.exp
-                }
-                VideoPlayer(video, modifier = Modifier
+
+                VideoPlayer(exoPlayer, modifier = Modifier
                     .fillMaxWidth()
                     .padding(5.dp)
                     .clip(
@@ -179,9 +210,34 @@ fun LevelUpView(heroInfo: HeroInfo?, closeEvent: () -> Unit) {
         10-> "+30% к получаемым очкам исследования"
         else -> "+30% к получаемым очкам исследования"
     }
+    val context = LocalContext.current
+    val exoPlayer = remember {
+        ExoPlayer.Builder(context).build().apply {
+            val uri = RawResourceDataSource.buildRawResourceUri(R.raw.level_up)
+            setMediaItem(MediaItem.fromUri(uri))
+            repeatMode = Player.REPEAT_MODE_ONE
+            prepare()
+            playWhenReady = true
+        }
+    }
+    // player view
+    DisposableEffect(exoPlayer) {
+        onDispose {
+            // relase player when no longer needed
+            Log.d("ExoPlayer", "ExoPlayer disposed")
+            exoPlayer.release()
+        }
+    }
+
+    var showView by remember { mutableStateOf(false)}
+    LaunchedEffect(true) {
+        delay(200)
+        showView = true
+    }
     Box(
         Modifier
             .fillMaxSize()
+            .alpha(if (showView) 1f else 0f)
             .padding(15.dp)) {
         Box(
             modifier = Modifier
@@ -193,12 +249,12 @@ fun LevelUpView(heroInfo: HeroInfo?, closeEvent: () -> Unit) {
                     Color(0xFFA7FAE9),
                     RoundedCornerShape(15.dp)
                 )
-                .background(Color.Black)
+                .background(Color(0xFF010101))
 
         ) {
             Column() {
                 VideoPlayer(
-                    R.raw.level_up, modifier = Modifier
+                    exoPlayer, modifier = Modifier
                         .fillMaxWidth()
                         .padding(5.dp)
                         .clip(
@@ -299,20 +355,8 @@ private fun CloseRow(closeEvent: () -> Unit) {
 }
 
 @Composable
-fun VideoPlayer(id: Int, modifier: Modifier = Modifier) {
+fun VideoPlayer(exoPlayer: ExoPlayer, modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
-
-    val exoPlayer = remember {
-        ExoPlayer.Builder(context).build().apply {
-            val uri = RawResourceDataSource.buildRawResourceUri(id)
-            setMediaItem(MediaItem.fromUri(uri))
-            repeatMode = Player.REPEAT_MODE_ONE
-            prepare()
-            playWhenReady = true
-        }
-    }
-
     AndroidView(
         modifier = modifier,
         factory = {
@@ -330,13 +374,5 @@ fun VideoPlayer(id: Int, modifier: Modifier = Modifier) {
             }
         },
     )
-
-        // player view
-    DisposableEffect(exoPlayer) {
-        onDispose {
-            // relase player when no longer needed
-            exoPlayer?.release()
-        }
-    }
 
 }

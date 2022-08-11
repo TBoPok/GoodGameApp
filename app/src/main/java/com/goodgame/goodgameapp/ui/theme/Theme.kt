@@ -32,9 +32,9 @@ private val LightColorPalette = lightColors(
     background = Color.White,
     surface = Color.White,
     onPrimary = Color.White,
-    onSecondary = Color.Black,
-    onBackground = Color.Black,
-    onSurface = Color.Black,
+    onSecondary = Color(0xFF010101),
+    onBackground = Color(0xFF010101),
+    onSurface = Color(0xFF010101),
     */
 )
 

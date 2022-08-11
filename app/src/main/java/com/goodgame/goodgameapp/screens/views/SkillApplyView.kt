@@ -54,7 +54,7 @@ fun SkillApplyView(
             onDone(newStats.value)
     }
 
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    Box(Modifier.fillMaxSize().clickable {  }, contentAlignment = Alignment.Center) {
         Box(
             Modifier
                 .fillMaxWidth()
@@ -66,14 +66,14 @@ fun SkillApplyView(
                 Text(
                     text = title.value,
                     style = MaterialTheme.typography.h1,
-                    color = Color.Black,
+                    color = Color(0xFF010101),
                 )
                 Spacer(modifier = Modifier.height(15.dp))
                 Text(
                     modifier = Modifier.height(30.dp),
                     text = subTitle.value,
                     style = MaterialTheme.typography.subtitle1,
-                    color = Color.Black
+                    color = Color(0xFF010101)
                 )
                 Spacer(modifier = Modifier.height(15.dp))
                 Row () {
@@ -184,7 +184,7 @@ private fun CancelButton(isActive: MutableState<Boolean>, height: Dp, onClick: (
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
                 .alpha(1f),
-            color = if (isActive.value) Color.Black else Color(0x80000000),
+            color = if (isActive.value) Color(0xFF010101) else Color(0x80000000),
             style = MaterialTheme.typography.button
         )
     }

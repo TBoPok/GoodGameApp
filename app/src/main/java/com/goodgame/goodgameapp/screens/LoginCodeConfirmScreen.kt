@@ -188,10 +188,10 @@ fun CodeConfirmField(confirmCode : MutableState<String>) {
             singleLine = true,
             textStyle = TextStyle(fontSize = 25.sp, textAlign = TextAlign.Center),
             colors = TextFieldDefaults.textFieldColors(
-                textColor = Color.Black,
+                textColor = Color(0xFF010101),
                 backgroundColor = Color.Transparent,
                 focusedIndicatorColor = Color.Transparent,
-                cursorColor = Color.Black),
+                cursorColor = Color(0xFF010101)),
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(topStart = 15.dp, topEnd = 15.dp, bottomStart = 15.dp, bottomEnd = 15.dp))

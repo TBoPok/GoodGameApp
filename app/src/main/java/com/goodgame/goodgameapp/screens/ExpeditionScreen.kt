@@ -2,6 +2,7 @@ package com.goodgame.goodgameapp.screens
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -57,6 +58,8 @@ import com.goodgame.goodgameapp.screens.views.FadeTransition
 import com.goodgame.goodgameapp.screens.views.FadeTransitionFloat
 import com.goodgame.goodgameapp.screens.views.MetallButton
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.exp
 
 private enum class ExpeditionScreenState {
@@ -132,6 +135,7 @@ fun ExpeditionScreen(navController: NavController, viewModel: GameViewModel) {
     }
 
     val lifecycleOwner = LocalLifecycleOwner.current
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(expeditionState.value) {
         when (expeditionState.value) {
@@ -172,8 +176,11 @@ fun ExpeditionScreen(navController: NavController, viewModel: GameViewModel) {
                             loadingProgress.value = it.data ?: 0
                         }
                         Status.SUCCESS -> {
-                            loadingProgress.value = 100
-                            expeditionState.value = ExpeditionScreenState.ACTION
+                            coroutineScope.launch {
+                                delay(500)
+                                loadingProgress.value = 100
+                                expeditionState.value = ExpeditionScreenState.ACTION
+                            }
                         }
                         Status.ERROR -> {
                             expeditionState.value = ExpeditionScreenState.ERROR
@@ -191,6 +198,7 @@ fun ExpeditionScreen(navController: NavController, viewModel: GameViewModel) {
                             }
                             Status.SUCCESS -> {
                                 expeditionResultBuf.value = it.data
+                                Log.d("expedition", "Result: ${expeditionResultBuf.value}")
                                 expeditionState.value = ExpeditionScreenState.HERO_INFO_UPDATE
                             }
                             Status.ERROR -> {
@@ -334,7 +342,7 @@ private fun ShowExpedition(
 
     LazyColumn(modifier = Modifier
         .fillMaxSize()
-        .background(Color.Black),
+        .background(Color(0xFF010101)),
         state = scrollState) {
         item()
         {
@@ -536,12 +544,8 @@ private fun ShowExpedition(
         {
             if (expeditionResult != null) {
                 val context = LocalContext.current
-                val path = remember {
-                    mutableStateOf(
-                        getPathFromUrl(expedition.image, context)
-                    )
-                }
-                if (path.value != "") {
+                val path = getPathFromUrl(expedition.image, context)
+                if (path != "") {
                     Box() {
                         Image(
                             painter,
@@ -584,12 +588,33 @@ private fun ShowExpedition(
                     }
                 }
                 else {
-                    Image(
-                        painterResource(R.drawable.expedition_success),
-                        contentDescription = null,
-                        contentScale = ContentScale.FillWidth,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    if (expeditionResult.result == "win") {
+                        Image(
+                            painterResource(R.drawable.expedition_success),
+                            contentDescription = null,
+                            contentScale = ContentScale.FillWidth,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        )
+                    }
+                    if (expeditionResult.result == "lose") {
+                        Image(
+                            painterResource(R.drawable.expedition_failure),
+                            contentDescription = null,
+                            contentScale = ContentScale.FillWidth,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        )
+                    }
+                    if (expeditionResult.result == "run") {
+                        Image(
+                            painterResource(R.drawable.expedition_cancel),
+                            contentDescription = null,
+                            contentScale = ContentScale.FillWidth,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))

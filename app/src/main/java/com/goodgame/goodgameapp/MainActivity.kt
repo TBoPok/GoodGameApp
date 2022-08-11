@@ -74,7 +74,7 @@ class MainActivity : ComponentActivity() {
     fun HideSystemUI() {
 
         val systemUiController: SystemUiController = rememberSystemUiController()
-        systemUiController.setStatusBarColor(Color.Black, darkIcons = false)
+        systemUiController.setStatusBarColor(Color(0xFF010101), darkIcons = false)
 
         systemUiController.isStatusBarVisible = true // Status bar
 

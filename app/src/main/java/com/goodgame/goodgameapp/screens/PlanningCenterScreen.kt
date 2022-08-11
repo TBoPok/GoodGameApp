@@ -42,7 +42,7 @@ fun PlanningCenterScreen(navController: NavController, viewModel: GameViewModel)
     Column(modifier = Modifier
         .verticalScroll(scrollState)
         .fillMaxSize()
-        .background(Color.Black)) {
+        .background(Color(0xFF010101))) {
         Row { // Head row
             HeadPlanning()
         }
@@ -59,7 +59,7 @@ fun PlanningCenterScreen(navController: NavController, viewModel: GameViewModel)
     }
     Box (modifier = Modifier
         .padding(start = 20.dp, top = 20.dp)
-        .background(Color.Black)
+        .background(Color(0xFF010101))
         .clickable { navController.navigateUp() }) {
         Row {
             Image(
@@ -301,7 +301,7 @@ private fun InfoRow(
 //    Column(modifier = Modifier
 //        .verticalScroll(scrollState)
 //        .fillMaxSize()
-//        .background(Color.Black)) {
+//        .background(Color(0xFF010101))) {
 //        Row { // Head row
 //            HeadPlanning()
 //        }
@@ -314,7 +314,7 @@ private fun InfoRow(
 //    }
 //    Box (modifier = Modifier
 //        .padding(start = 20.dp, top = 20.dp)
-//        .background(Color.Black)
+//        .background(Color(0xFF010101))
 //        .height(IntrinsicSize.Max)
 //        .clickable { }) {
 //        Row {

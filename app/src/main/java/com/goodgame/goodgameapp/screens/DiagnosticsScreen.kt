@@ -46,7 +46,7 @@ fun DiagnosticsScreen(navController: NavController, viewModel: GameViewModel) {
     Box(
         Modifier
             .fillMaxSize()
-            .background(Color.Black))
+            .background(Color(0xFF010101)))
     Column(modifier = Modifier
         .verticalScroll(scrollState)
         .fillMaxHeight()
@@ -68,7 +68,7 @@ fun DiagnosticsScreen(navController: NavController, viewModel: GameViewModel) {
     }
     Box (modifier = Modifier
         .padding(start = 20.dp, top = 20.dp)
-        .background(Color.Black)
+        .background(Color(0xFF010101))
         .clickable { navController.navigateUp() }) {
         Row {
             Image(
@@ -97,7 +97,6 @@ fun DiagnosticsScreen(navController: NavController, viewModel: GameViewModel) {
             onDone = {newStats ->
                 isSkillApplyViewActive.value = false
                 if (newStats != null) {
-                    tempUserStatsPoints.value = heroInfo?.stats_points ?: 0
                     heroInfo?.stats = newStats
                     tempUserStats.value = newStats
                     tempUserStatsPoints.value = tempUserStatsPoints.value - 1
@@ -173,13 +172,14 @@ private fun HasExpPoints(points: Int) {
                 .background(Color(0xFF0077FF))
                 .padding(start = 15.dp)) {
             Row (modifier = Modifier.height(35.dp)) {
-                Text(text = "нераспределённые очки исследования",
+                Text(text = "доступные очки исследования",
                     style = MaterialTheme.typography.button,
                     color = Color(0xFFFFFFFF),
                     fontSize = 12.sp,
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
-                        .padding(start = 15.dp))
+                        .fillMaxWidth(0.7f)
+                        .padding(start = 10.dp))
                 Spacer(Modifier.weight(1f))
                 Box(contentAlignment = Alignment.CenterEnd) {
                     Image(
@@ -188,11 +188,14 @@ private fun HasExpPoints(points: Int) {
                         modifier = Modifier.fillMaxHeight(),
                         contentScale = ContentScale.FillHeight,
                     )
-                    Text(text = "$points",
-                        style = MaterialTheme.typography.button,
-                        color = Color(0xFF000000),
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth(0.8f))
+                    Box(Modifier.matchParentSize(), contentAlignment = Alignment.Center) {
+                        Text(text = "$points",
+                            style = MaterialTheme.typography.button,
+                            color = Color(0xFF000000),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(start = 15.dp))
+                    }
+
                 }
             }
         }

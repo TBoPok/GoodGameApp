@@ -261,7 +261,7 @@ class PagerState {
 
                 val velocity = tracker.calculateVelocity(orientation)
                 scope?.launch {
-                    var targetOffset = decay.calculateTargetValue(dragOffset.value, -velocity)
+                    var targetOffset = decay.calculateTargetValue(dragOffset.value, -velocity.coerceIn(0f,3000f))
                     val remainder = targetOffset.toInt().absoluteValue % itemDimension
                     val extra = if (remainder > itemDimension / 2f) 1 else 0
                     val lastVisibleIndex =

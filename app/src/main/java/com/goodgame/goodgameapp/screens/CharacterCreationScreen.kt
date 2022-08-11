@@ -82,7 +82,7 @@ fun CharacterCreationScreen(navController: NavController, viewModel: GameViewMod
 
     Column(modifier = Modifier
         .fillMaxSize()
-        .background(Color.Black)){
+        .background(Color(0xFF010101))){
         Row() { // Username row
             Box(modifier = Modifier
                 .fillMaxWidth(),
@@ -415,7 +415,7 @@ private fun CreateCharPreview() {
 
     Column(modifier = Modifier
         .fillMaxSize()
-        .background(Color.Black)){
+        .background(Color(0xFF010101))){
         Row() { // Username row
             Box(modifier = Modifier
                 .fillMaxWidth(),

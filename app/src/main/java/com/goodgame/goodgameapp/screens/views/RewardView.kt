@@ -32,7 +32,7 @@ fun RewardView(username: String, text: String, onClose: () -> Unit) {
                     text = text,
                     style = MaterialTheme.typography.h1,
                     fontSize = 25.sp,
-                    color = Color.Black,
+                    color = Color(0xFF010101),
                 )
                 Spacer(modifier = Modifier.height(15.dp))
                 Text(
@@ -40,7 +40,7 @@ fun RewardView(username: String, text: String, onClose: () -> Unit) {
                             "Предъяви это администратору и получи забери свою награду!",
                     style = MaterialTheme.typography.subtitle2,
                     lineHeight = 19.sp,
-                    color = Color.Black
+                    color = Color(0xFF010101)
                 )
                 Spacer(modifier = Modifier.height(15.dp))
                 MetallButton(isActive = mutableStateOf(true), height = 55.dp, activeText = "Понятно") {

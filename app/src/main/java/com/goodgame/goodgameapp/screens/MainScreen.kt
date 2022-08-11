@@ -47,7 +47,7 @@ fun MainScreen(navController: NavController, viewModel: GameViewModel) {
 
     Column(modifier = Modifier
         .fillMaxSize()
-        .background(Color.Black)
+        .background(Color(0xFF010101))
         .verticalScroll(scrollState)
     ) {
         Row  { // Head image and info
@@ -59,25 +59,30 @@ fun MainScreen(navController: NavController, viewModel: GameViewModel) {
             ActionMain(navController = navController, heroInfo = heroInfo)
         }
     }
-    var showExpeditionSuccess by remember { mutableStateOf(heroInfo?.expedition_passed ?: false)}
-    var showLvlUp by remember { mutableStateOf(heroInfo?.new_level ?: false)}
+    var showExpeditionSuccess by remember { mutableStateOf(heroInfo?.expedition_passed ?: false)} //
+    var showLvlUp by remember { mutableStateOf(
+        heroInfo?.new_level == true && !showExpeditionSuccess
+    )}
 
-//    FadeTransition(state = showLvlUp && !showExpeditionSuccess, visibleState = true) {
+
     if (showLvlUp && !showExpeditionSuccess) {
-        LevelUpView(heroInfo) {
+        LevelUpView(
+            heroInfo = heroInfo) {
             showLvlUp = false
             heroInfo?.new_level = false
             navController.navigate(Screen.DiagnosticsScreen.route)
         }
     }
 
-//    FadeTransition(state = showExpeditionSuccess, visibleState = true) {
     if (showExpeditionSuccess) {
-        ExpeditionCompletedView(heroInfo?.expeditions!!.last()) {
+        ExpeditionCompletedView(
+            expedition = heroInfo?.expeditions?.last()
+                ?: ExpeditionStoryModel(exp = 0, rsp = 0, name = null, 0, result = "exp", dateTime = null)) {
             heroInfo?.expedition_passed = false
             showExpeditionSuccess = false
         }
     }
+
 
 
 }
@@ -293,7 +298,7 @@ private fun ProgressScale(
 
 @Composable
 private fun ActionMain(heroInfo: HeroInfo?, navController: NavController) {
-    Box (Modifier.background(Color.Black)) {
+    Box (Modifier.background(Color(0xFF010101))) {
         Image(
 //            painterResource(R.drawable.base_scroll_bg),
             painterResource(R.drawable.diag_bottom_bg),
