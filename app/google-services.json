@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "271480507394",
+    "project_id": "goodgameapp-edaeb",
+    "storage_bucket": "goodgameapp-edaeb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:271480507394:android:bca6a5e706856c25eb2b1b",
+        "android_client_info": {
+          "package_name": "com.goodgame.goodgameapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "271480507394-sf1vmq0dh3bqhhatat0ms0k0eubtkddr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTb1J1bxHkA5lmr-LxhyX3-gMPobuM7O0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "271480507394-sf1vmq0dh3bqhhatat0ms0k0eubtkddr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

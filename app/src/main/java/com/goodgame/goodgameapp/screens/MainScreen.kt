@@ -32,18 +32,24 @@ import com.goodgame.goodgameapp.models.ExpeditionStoryModel
 import com.goodgame.goodgameapp.viewmodel.GameViewModel
 import com.goodgame.goodgameapp.models.HeroInfo
 import com.goodgame.goodgameapp.models.characterTypes
+import com.goodgame.goodgameapp.navigation.BackPressedTimer
 import com.goodgame.goodgameapp.navigation.Screen
 import com.goodgame.goodgameapp.navigation.clearBackStack
 import com.goodgame.goodgameapp.screens.views.ExpeditionCompletedView
 import com.goodgame.goodgameapp.screens.views.FadeTransition
 import com.goodgame.goodgameapp.screens.views.LevelUpView
+import com.goodgame.goodgameapp.screens.views.SimplePopUp
 import kotlinx.coroutines.delay
+import java.io.IOException
 
 @Composable
 fun MainScreen(navController: NavController, viewModel: GameViewModel) {
     val scrollState = rememberScrollState()
 
     val heroInfo by viewModel.heroInfo.observeAsState()
+    var exitAccountPopUp by remember { mutableStateOf(false)}
+
+    BackPressedTimer()
 
     Column(modifier = Modifier
         .fillMaxSize()
@@ -56,13 +62,19 @@ fun MainScreen(navController: NavController, viewModel: GameViewModel) {
         Row (modifier = Modifier
             .fillMaxWidth()
         ) { // Actions row
-            ActionMain(navController = navController, heroInfo = heroInfo)
+            ActionMain(navController = navController, heroInfo = heroInfo, exitAccount = {exitAccountPopUp = true})
         }
     }
-    var showExpeditionSuccess by remember { mutableStateOf(heroInfo?.expedition_passed ?: false)} //
-    var showLvlUp by remember { mutableStateOf(
-        heroInfo?.new_level == true && !showExpeditionSuccess
-    )}
+
+    var showExpeditionSuccess by remember { mutableStateOf(false)}
+    var showLvlUp by remember { mutableStateOf(false)}
+
+    LaunchedEffect(heroInfo?.expedition_passed) {
+        delay(300)
+        showExpeditionSuccess = heroInfo?.expedition_passed ?: false
+        delay(300)
+        showLvlUp = heroInfo?.new_level == true && !showExpeditionSuccess
+    }
 
 
     if (showLvlUp && !showExpeditionSuccess) {
@@ -83,7 +95,19 @@ fun MainScreen(navController: NavController, viewModel: GameViewModel) {
         }
     }
 
-
+    if (exitAccountPopUp) {
+        SimplePopUp(headText = "Выйти из аккаунта?",
+            onApply = {
+                viewModel.exitAccount()
+                navController.navigate(Screen.SplashScreen.route) {
+                    clearBackStack(navController, this)
+                }
+                exitAccountPopUp = false
+            },
+            onClose = {
+                exitAccountPopUp = false
+            })
+    }
 
 }
 
@@ -297,7 +321,7 @@ private fun ProgressScale(
 }
 
 @Composable
-private fun ActionMain(heroInfo: HeroInfo?, navController: NavController) {
+private fun ActionMain(heroInfo: HeroInfo?, navController: NavController, exitAccount: () -> Unit) {
     Box (Modifier.background(Color(0xFF010101))) {
         Image(
 //            painterResource(R.drawable.base_scroll_bg),
@@ -327,7 +351,7 @@ private fun ActionMain(heroInfo: HeroInfo?, navController: NavController) {
             Spacer(modifier = Modifier.padding(vertical = 5.dp))
             if (heroInfo != null) {
                 if (heroInfo.has_expeditions > 0) {
-                    ButtonGo(text = "Вам доступна экспедеция") {navController.navigate(Screen.PlanningCenterScreen.route)}
+                    ButtonGo(text = "Вам доступна экспедиция") {navController.navigate(Screen.PlanningCenterScreen.route)}
                     Spacer(modifier = Modifier.padding(vertical = 5.dp))
                 }
             }
@@ -358,7 +382,26 @@ private fun ActionMain(heroInfo: HeroInfo?, navController: NavController) {
                         )
                     }
                 }
+                Box (modifier = Modifier
+                    .weight(1f)
+                    .height(50.dp)
+                    .padding(end = 5.dp)
+                    .background(Color(0x802B2B2B))
+                    .clip(RoundedCornerShape(5.dp))
+                    .clickable {
+                        exitAccount()
+                    },
+                    contentAlignment = Alignment.Center) {
+                    Row {
+                        Text(
+                            text = "Выйти из аккаунта",
+                            style = MaterialTheme.typography.button,
+                            color = Color.White,
+                        )
+                    }
+                }
             }
+
         }
     }
 }

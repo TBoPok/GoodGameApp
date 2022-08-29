@@ -78,7 +78,7 @@ fun IntroScreen (navController: NavController, viewModel: GameViewModel, isCharC
         text : String,
         textStyle: TextStyle = MaterialTheme.typography.subtitle2,
         color : Color = Color.White,
-        textAlign : TextAlign = TextAlign.Start) :  Unit = Text(
+        textAlign : TextAlign = TextAlign.Justify) :  Unit = Text(
         text = text,
         letterSpacing = 0.sp,
         lineHeight = 20.sp,
@@ -140,14 +140,14 @@ fun IntroScreen (navController: NavController, viewModel: GameViewModel, isCharC
                                     text = "Эта каменистая планета изучалась только автоматическими зондами, данные о прямом исследовании отсутствуют. Она обладает высокой плотности водородно-гелиевой атмосферой; поверхность планеты покрыта красным грунтом. Возможно наличие воды и жизни.",
                                 )
                             }
-                            Row () {
-                                cardText(
-                                    text = "Радиус - 5941 км\n Продолжительность суток -\n24,9 земных часа\nТемпература поверхности\n+45 +65 °C",
-                                    textStyle = micradi,
-                                    textAlign = TextAlign.Center,
-                                    color = Color(0x80FFFFFF)
-                                )
-                            }
+//                            Row () {
+//                                cardText(
+//                                    text = "Радиус - 5941 км\n Продолжительность суток -\n24,9 земных часа\nТемпература поверхности\n+45 +65 °C",
+//                                    textStyle = micradi,
+//                                    textAlign = TextAlign.Center,
+//                                    color = Color(0x80FFFFFF)
+//                                )
+//                            }
                         }
                     }
                     4 -> {
@@ -199,38 +199,21 @@ fun IntroScreen (navController: NavController, viewModel: GameViewModel, isCharC
             }
         }
     }
-if (firstImage.value == true) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-        Image(
-            painterResource(R.drawable.openpage),
-            contentDescription = "first_screen",
-            contentScale = ContentScale.Crop,
+    if (firstImage.value == true) {
+        Box(
             modifier = Modifier
-                .matchParentSize()
-                .clickable { firstImage.value = false }
-        )
-    }
-    Column(modifier = Modifier.fillMaxSize()) {
-        Row() {
+                .fillMaxSize()
+        ) {
             Image(
-                painterResource(R.drawable.openpage_up),
-                contentDescription = "Top image",
+                painterResource(R.drawable.openpage),
+                contentDescription = "first_screen",
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxWidth())
-        }
-        Row (modifier = Modifier.weight(1f)) {}
-        Row() {
-            Image(
-                painterResource(R.drawable.openpage_down),
-                contentDescription = "Bottom image",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxWidth())
+                modifier = Modifier
+                    .matchParentSize()
+                    .clickable { firstImage.value = false }
+            )
         }
     }
-}
 }
 
 
@@ -365,7 +348,7 @@ if (firstImage.value == true) {
                 }
                 Row () {
                     MetallButton(
-                        isActive = remember {mutableStateOf(true)},
+                        isActive = true,
                         activeText = "Продолжить",
                         height = 50.dp) {
                         onClick()

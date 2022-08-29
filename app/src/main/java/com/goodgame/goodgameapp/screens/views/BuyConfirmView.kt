@@ -78,7 +78,7 @@ fun BuyConfirmView(
                 )
                 Spacer(modifier = Modifier.height(15.dp))
                 Text(
-                    modifier = Modifier.height(30.dp),
+                    modifier = Modifier.defaultMinSize(minHeight = 30.dp),
                     text = subTitle.value,
                     style = MaterialTheme.typography.subtitle1,
                     color = Color(0xFF010101)

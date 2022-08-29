@@ -11,6 +11,7 @@ import androidx.lifecycle.liveData
 import com.goodgame.goodgameapp.models.*
 import com.goodgame.goodgameapp.retrofit.ApiHelper
 import com.goodgame.goodgameapp.retrofit.Response
+import com.goodgame.goodgameapp.retrofit.RetrofitBuilder
 import com.goodgame.goodgameapp.retrofit.Status
 import com.goodgame.goodgameapp.sharedprefs.SharedPrefs
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +30,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     private val TOKEN = "TOKEN"
     val sharedPrefs = SharedPrefs(context = context, APP_PREFERENCES)
 
-    lateinit var apiInterface : ApiHelper
+    val apiInterface = ApiHelper(RetrofitBuilder.apiService)
 
     fun getClubs() = liveData(Dispatchers.IO) {
         emit(Response.loading(data = null))

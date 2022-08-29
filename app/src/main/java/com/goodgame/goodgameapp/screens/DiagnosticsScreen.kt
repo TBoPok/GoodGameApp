@@ -14,6 +14,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -36,7 +37,12 @@ fun DiagnosticsScreen(navController: NavController, viewModel: GameViewModel) {
     val heroInfo by viewModel.heroInfo.observeAsState()
     val isLvlsListActive = remember {mutableStateOf(false)}
 
-    val tempUserStats = remember { mutableStateOf<StatsModel>(heroInfo?.stats?.copy() ?: StatsModel(0,0,0,0))}
+    if (heroInfo?.stats == null) {
+        navController.navigate(Screen.SplashScreen.route) {
+            navController.backQueue.clear()
+        }
+    }
+    val tempUserStats = remember { mutableStateOf(heroInfo?.stats?.copy() ?: StatsModel(0,0,0,0))}
     val tempUserStatsPoints = remember { mutableStateOf(heroInfo?.stats_points ?: 0)}
 
     val isSkillApplyViewActive = remember { mutableStateOf(false)}
@@ -95,12 +101,13 @@ fun DiagnosticsScreen(navController: NavController, viewModel: GameViewModel) {
         SkillApplyView(
             skillApply = viewModel.setHeroSkill(skillTypeApply.value),
             onDone = {newStats ->
-                isSkillApplyViewActive.value = false
                 if (newStats != null) {
+                    heroInfo?.stats_points = tempUserStatsPoints.value - 1
                     heroInfo?.stats = newStats
                     tempUserStats.value = newStats
                     tempUserStatsPoints.value = tempUserStatsPoints.value - 1
                 }
+                isSkillApplyViewActive.value = false
             }
         )
     }
@@ -142,7 +149,7 @@ private fun HeadDiagnostic(tempUserStatsPoints: Int) {
             }
             Row(modifier = Modifier.weight(0.22f), verticalAlignment = Alignment.Top) {
                 Text(
-                    text = "Тут находится все показатели твоего персонажа и тут ты можешь распределять очки опыта",
+                    text = "Здесь находятся все показатели твоего персонажа и тут ты можешь распределять очки опыта",
                     style = MaterialTheme.typography.subtitle1,
                     color = Color.White,
                     modifier = Modifier
@@ -172,7 +179,7 @@ private fun HasExpPoints(points: Int) {
                 .background(Color(0xFF0077FF))
                 .padding(start = 15.dp)) {
             Row (modifier = Modifier.height(35.dp)) {
-                Text(text = "доступные очки исследования",
+                Text(text = "доступные очки навыков",
                     style = MaterialTheme.typography.button,
                     color = Color(0xFFFFFFFF),
                     fontSize = 12.sp,
@@ -322,6 +329,9 @@ private fun UserScores(text: String, points: Int, showCoin: Boolean) {
         fontWeight = FontWeight.Bold,
         fontSize = 12.sp,
     )
+    val coinHeight = with(LocalDensity.current) {
+        (12.sp).toDp()
+    }
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = text,
@@ -339,6 +349,7 @@ private fun UserScores(text: String, points: Int, showCoin: Boolean) {
                 painterResource(R.drawable.coin),
                 contentDescription = "coin",
                 contentScale = ContentScale.Inside,
+                modifier = Modifier.height(coinHeight)
             )
     }
 }

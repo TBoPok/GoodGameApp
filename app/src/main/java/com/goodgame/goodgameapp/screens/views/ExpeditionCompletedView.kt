@@ -89,7 +89,8 @@ fun ExpeditionCompletedView(expedition: ExpeditionStoryModel, closeEvent: () -> 
     // player view
     DisposableEffect(exoPlayer) {
         onDispose {
-            // relase player when no longer needed
+            exoPlayer.stop()
+            exoPlayer.clearMediaItems()
             exoPlayer.release()
         }
     }
@@ -157,7 +158,7 @@ fun ExpeditionCompletedView(expedition: ExpeditionStoryModel, closeEvent: () -> 
                     }
                     Spacer(modifier = Modifier.height(15.dp))
 
-                    MetallButton(isActive = remember { mutableStateOf(true)}, activeText = "Продолжить") {
+                    MetallButton(isActive = true, activeText = "Продолжить") {
                         closeEvent()
                     }
                     Spacer(modifier = Modifier.height(14.dp))
@@ -286,7 +287,7 @@ fun LevelUpView(heroInfo: HeroInfo?, closeEvent: () -> Unit) {
                     HasExpPoints(points = heroInfo?.stats_points ?: 0)
                     Spacer(modifier = Modifier.height(15.dp))
                     MetallButton(
-                        isActive = remember { mutableStateOf(true) },
+                        isActive = true,
                         activeText = "Продолжить"
                     ) {
                         closeEvent()

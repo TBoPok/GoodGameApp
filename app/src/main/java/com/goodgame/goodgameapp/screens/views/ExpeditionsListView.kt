@@ -39,25 +39,7 @@ import java.util.*
 
 @Composable
 fun ExpeditionsListView(viewModel: GameViewModel, closeEvent: () -> Unit) {
-    val launchKey = remember { mutableStateOf(true) }
-    val lifecycleOwner = LocalLifecycleOwner.current
     val heroInfo by viewModel.heroInfo.observeAsState()
-    val isHeroLoaded by viewModel.isHeroInfoLoaded.observeAsState()
-
-    if (isHeroLoaded == false) {
-        LaunchedEffect(launchKey.value) {
-            viewModel.getHeroInfo().observe(lifecycleOwner) {
-                when (it.status) {
-                    Status.SUCCESS -> Log.d("HTTP", "ExpList screen loaded")
-                    Status.ERROR -> {
-                        Log.d("HTTP", "Main screen error " + it.message)
-                        launchKey.value = !launchKey.value
-                    }
-                    Status.LOADING -> {}
-                }
-            }
-        }
-    }
 
     BackHandler() {
         closeEvent()
@@ -90,13 +72,8 @@ fun ExpeditionsListView(viewModel: GameViewModel, closeEvent: () -> Unit) {
                 Column(modifier = Modifier.padding(vertical = 15.dp, horizontal = 17.dp)) {
                     ContentHeadingRow(heroInfo?.total_progress)
                     Spacer(modifier = Modifier.padding(vertical = 5.dp))
-                    if (isHeroLoaded == true) {
                         if (heroInfo != null)
                             ContentRow(heroInfo?.expeditions, heroInfo?.total_progress)
-                    }
-                    else {
-                        LoadingView(true)
-                    }
                 }
             }
         }
@@ -147,7 +124,7 @@ private fun ContentHeadingRow(expeditionsCompleted: Int?) {
 @Composable
 private fun ContentRow(expeditions: List<ExpeditionStoryModel>?, totalProgress: Int?) {
     val scrollState = rememberLazyListState()
-    if (expeditions == null) {
+    if (expeditions == null || expeditions.isEmpty()) {
         Text(
             text = "ЖУРНАЛ ПОКА ПУСТ",
             style = MaterialTheme.typography.h2,
@@ -155,7 +132,9 @@ private fun ContentRow(expeditions: List<ExpeditionStoryModel>?, totalProgress: 
         )
     }
     else {
-        val progress = totalProgress?.div(expeditions.size)
+        var progress = 0
+        if (expeditions.isNotEmpty())
+        progress = totalProgress?.div(expeditions.size) ?: 0
         LazyColumn(state = scrollState) {
             items(items = expeditions) { expedition ->
                 ExpeditionCard(

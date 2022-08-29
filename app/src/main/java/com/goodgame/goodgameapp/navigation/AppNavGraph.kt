@@ -1,6 +1,7 @@
 package com.goodgame.goodgameapp.navigation
 
 import androidx.compose.animation.*
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.navigation.*
@@ -56,18 +57,7 @@ class AppNavGraph() {
             composable(route = Screen.LoginCodeConfirmScreen.route) {
                 LoginCodeConfirmScreen(navController, loginViewModel)
             }
-            composable(route = Screen.MainScreen.route,
-                enterTransition = { fadeIn(animationSpec = tween(200)) },
-                exitTransition = {
-//                    when (targetState.destination.route) {
-//                        Screen.DiagnosticsScreen.route,
-//                        Screen.PlanningCenterScreen.route,
-//                        Screen.SupplyScreen.route ->
-//                            slideOutOfContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(300))
-//                        else -> null
-//                    }
-                    null
-                }) {
+            composable(route = Screen.MainScreen.route){
                 MainScreen(navController, gameViewModel)
             }
             composable(route = "${Screen.IntroScreen.route}/{isCharCreate}",

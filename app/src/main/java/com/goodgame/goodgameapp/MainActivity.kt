@@ -6,11 +6,18 @@ import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
 import android.util.Log.DEBUG
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.core.view.ViewCompat
@@ -39,44 +46,31 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         adjustFontScale2(resources.configuration)
-
-//        adjustFontScale(resources.configuration)
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        loginViewModel = ViewModelProvider(this)[LoginViewModel::class.java]
+        gameViewModel = ViewModelProvider(this)[GameViewModel::class.java]
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         setContent {
             HideSystemUI()
             GoodGameAppTheme {
                 // A surface container using the 'background' color from the theme
-                loginViewModel = ViewModelProvider(this).get(LoginViewModel::class.java)
-                gameViewModel = ViewModelProvider(this).get(GameViewModel::class.java)
-
-                val apiInterface = ApiHelper(RetrofitBuilder.apiService)
-                loginViewModel.apiInterface = apiInterface
-                gameViewModel.apiInterface = apiInterface
                 val navController = rememberAnimatedNavController()
                 val appNavGraph = AppNavGraph()
-                Scaffold (
-                    topBar = {},
-                    bottomBar = {}
-                ) {
+                Box (Modifier.fillMaxSize().background(Color.Black)) {
                     appNavGraph.InitGraph(navController = navController, loginViewModel, gameViewModel)
                 }
-                BackPressedTimer(navController = navController)
             }
         }
     }
 
     private fun adjustFontScale2(configuration: Configuration) {
-        if (configuration.smallestScreenWidthDp <= 360) configuration.fontScale = 1.0f
+        if (configuration.smallestScreenWidthDp <= 400) configuration.fontScale = 1.0f
         else configuration.fontScale = 1.2f
 
     }
 
     @Composable
     fun HideSystemUI() {
-
-        val systemUiController: SystemUiController = rememberSystemUiController()
-        systemUiController.setStatusBarColor(Color(0xFF010101), darkIcons = false)
-
-        systemUiController.isStatusBarVisible = true // Status bar
 
     }
 }

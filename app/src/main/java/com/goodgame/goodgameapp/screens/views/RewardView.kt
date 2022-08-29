@@ -43,7 +43,7 @@ fun RewardView(username: String, text: String, onClose: () -> Unit) {
                     color = Color(0xFF010101)
                 )
                 Spacer(modifier = Modifier.height(15.dp))
-                MetallButton(isActive = mutableStateOf(true), height = 55.dp, activeText = "Понятно") {
+                MetallButton(isActive = true, height = 55.dp, activeText = "Понятно") {
                     onClose()
                 }
             }

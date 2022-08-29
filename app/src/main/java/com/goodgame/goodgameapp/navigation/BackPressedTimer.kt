@@ -10,22 +10,20 @@ import kotlinx.coroutines.delay
 import kotlin.time.seconds
 
 @Composable
-fun BackPressedTimer(navController: NavController) {
+fun BackPressedTimer() {
     val context = LocalContext.current
     val backPressed = remember { mutableStateOf(false)}
     BackHandler() {
-        if (navController.currentBackStackEntry?.destination?.route == Screen.MainScreen.route) {
-            if (backPressed.value == true)
-                (context as Activity).finish()
-            backPressed.value = true
-            Toast
-                .makeText(context, "Нажмите еще раз для выхода", Toast.LENGTH_SHORT)
-                .show()
-        }
+        if (backPressed.value == true)
+            (context as Activity).finish()
+        backPressed.value = true
+        Toast
+            .makeText(context, "Нажмите еще раз для выхода", Toast.LENGTH_SHORT)
+            .show()
     }
 
     LaunchedEffect(backPressed.value) {
-        if (backPressed.value == true)
+        if (backPressed.value)
             while(true) {
                 delay(2000)
                 backPressed.value = false

@@ -15,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
@@ -23,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -57,6 +59,7 @@ fun SupplyScreen(navController: NavController, viewModel: GameViewModel, initTab
     val heroInfo by viewModel.heroInfo.observeAsState()
 
     val howToActivateActive = remember { mutableStateOf(false)}
+    val howToGetCoinsView = remember { mutableStateOf(false)}
     val showReward = remember { mutableStateOf(false)}
     val textReward = remember { mutableStateOf("")}
 
@@ -69,8 +72,8 @@ fun SupplyScreen(navController: NavController, viewModel: GameViewModel, initTab
         viewModel.getShopList().observe(LocalLifecycleOwner.current) {
             when (it.status) {
                 Status.SUCCESS -> {
-                    if (it.data == null)
-                        TODO()
+                    if (it.data == null) { }
+
                     else
                         shopList.value = it.data
                     loadingStateShop.value = false
@@ -111,9 +114,11 @@ fun SupplyScreen(navController: NavController, viewModel: GameViewModel, initTab
         .fillMaxHeight()
     ) {
         Row { // Head row
-            HeadSupply(heroInfo)
+            HeadSupply(heroInfo) {
+                howToGetCoinsView.value = true
+            }
         }
-        Row (Modifier.fillMaxSize()) { // Action row
+        Row (Modifier.fillMaxWidth()) { // Action row
             ActionRowSupply(
                 initTab,
                 shopList = shopList.value,
@@ -145,6 +150,10 @@ fun SupplyScreen(navController: NavController, viewModel: GameViewModel, initTab
                 modifier = Modifier.padding(start = 1.dp, end = 3.dp))
         }
     }
+    if (howToGetCoinsView.value)
+        HowToGetCoinsView {
+            howToGetCoinsView.value = false
+        }
     if (howToActivateActive.value)
         HowToActivateView {
             howToActivateActive.value = false
@@ -192,8 +201,8 @@ fun ActionRowSupply(
             painterResource(R.drawable.diag_bottom_bg),
             contentDescription = "scroll_bg_image",
             modifier = Modifier
-                .fillMaxSize()
-                .scale(scaleY = 1.45f, scaleX = 1f),
+                .fillMaxWidth()
+                .scale(scaleY = 1.1f, scaleX = 1f),
             contentScale = ContentScale.FillWidth,
         )
         Column(
@@ -202,10 +211,10 @@ fun ActionRowSupply(
                 .padding(horizontal = 14.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(35.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             TabChoice(pagesState.currentPage, onClick = setPage)
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(15.dp))
 
             HorizontalPager(state = pagesState, verticalAlignment = Alignment.Top, count = 2) { page ->
                 when (page) {
@@ -269,7 +278,7 @@ fun ShopList(
             Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 3.dp)) {
-            MetallButton(isActive = isItemChosen, height = 55.dp, activeText = "Вот это мне заверните, пожалуйста") {
+            MetallButton(isActive = isItemChosen.value, height = 55.dp, activeText = "Вот это мне заверните, пожалуйста") {
                 val chosenItem = shopItems.find {it.id == chosenItem.value}
                 if (chosenItem != null)
                     buyClick(chosenItem)
@@ -453,6 +462,7 @@ private fun RewardCardPlaceholder() {
     Row(modifier = Modifier
         .fillMaxWidth()
         .height(50.dp)
+        .alpha(0.4f)
         .clip(RoundedCornerShape(15.dp))
         .background(Color.White)
         .clickable { }) {
@@ -496,7 +506,7 @@ private fun TabChoice(page: Int, onClick: (page: Int) -> Unit) {
                 Modifier
                     .fillMaxSize()
                     .weight(1f)
-                    .clip (RoundedCornerShape(15.dp))
+                    .clip(RoundedCornerShape(15.dp))
                     .background(if (page == 0) Color(0xFFBFEFFC) else Color.Transparent)
                     .clickable { onClick(0) }) {
                 Text (
@@ -512,7 +522,7 @@ private fun TabChoice(page: Int, onClick: (page: Int) -> Unit) {
             Box (modifier = Modifier
                 .fillMaxSize()
                 .weight(1f)
-                .clip (RoundedCornerShape(15.dp))
+                .clip(RoundedCornerShape(15.dp))
                 .background(if (page == 1) Color(0xFFBFEFFC) else Color.Transparent)
                 .clickable { onClick(1) }) {
                 Text (
@@ -545,7 +555,9 @@ private fun ShopCard(shopItem: ShopItem, isActive: Boolean, onClick: (it: ShopIt
     val activeBordersColor = Color.Blue
     val activeTextColor = Color(0xFFFFFFFF)
     val notActiveTextColor = Color(0x80FFFFFF)
-
+    val coinHeight = with(LocalDensity.current) {
+        (14.sp).toDp()
+    }
     Box(modifier = Modifier
         .padding(2.dp)
         .fillMaxWidth()
@@ -580,6 +592,7 @@ private fun ShopCard(shopItem: ShopItem, isActive: Boolean, onClick: (it: ShopIt
                 painterResource(R.drawable.coin),
                 contentDescription = "coin",
                 contentScale = ContentScale.FillHeight,
+                modifier = Modifier.height(coinHeight),
                 alpha = if (shopItem.isAvailable) 1f else 0.2f,
             )
         }
@@ -588,7 +601,7 @@ private fun ShopCard(shopItem: ShopItem, isActive: Boolean, onClick: (it: ShopIt
 
 
 @Composable
-private fun HeadSupply(heroInfo: HeroInfo?) {
+private fun HeadSupply(heroInfo: HeroInfo?, howToGetCoins: () -> Unit) {
     val headTextStyle = TextStyle(
         color = Color.White,
         fontFamily = FontFamily(Font(R.font.micra_bold)),
@@ -603,6 +616,9 @@ private fun HeadSupply(heroInfo: HeroInfo?) {
             easing = FastOutSlowInEasing,
         )
     )
+    val coinHeight = with(LocalDensity.current) {
+        (MaterialTheme.typography.h1.fontSize * 0.7).toDp()
+    }
 
     Box (Modifier.fillMaxWidth()) {
         Image(
@@ -632,7 +648,7 @@ private fun HeadSupply(heroInfo: HeroInfo?) {
                             painterResource(R.drawable.coin),
                             contentDescription = "coin",
                             contentScale = ContentScale.FillHeight,
-                            modifier = Modifier.align(Alignment.CenterVertically)
+                            modifier = Modifier.align(Alignment.CenterVertically).height(coinHeight)
                         )
                         Spacer(modifier = Modifier.width(5.dp))
                         Text(
@@ -643,7 +659,7 @@ private fun HeadSupply(heroInfo: HeroInfo?) {
                         )
                     }
                     Row {
-                        Box (Modifier.clickable {  }) {
+                        Box (Modifier.clickable { howToGetCoins() }) {
                             Text(
                                 text = "Как пополнить?",
                                 style = MaterialTheme.typography.subtitle1,

@@ -31,6 +31,7 @@ import com.goodgame.goodgameapp.navigation.Screen
 import com.goodgame.goodgameapp.navigation.clearBackStack
 import com.goodgame.goodgameapp.screens.views.ExpeditionsListView
 import com.goodgame.goodgameapp.viewmodel.GameViewModel
+import kotlin.random.Random
 
 @Composable
 fun PlanningCenterScreen(navController: NavController, viewModel: GameViewModel) {
@@ -112,7 +113,7 @@ private fun HeadPlanning() {
             Row(modifier = Modifier.weight(0.32f)) {}
             Row(modifier = Modifier.weight(0.12f)) {
                 Text(
-                    text = "Здесь ты отправляешься в свои экспедиции и не забудь взять пивко",
+                    text = "Здесь ты отправляешься в свои экспедиции и не забудь надеть шапку",
                     style = MaterialTheme.typography.subtitle1,
                     color = Color.White,
                     modifier = Modifier
@@ -184,7 +185,7 @@ private fun ActionRow(heroInfo: HeroInfo?, navController: NavController) {
                             TopText(
                                 "Экспедиция недоступна\n"
                                         + "Приходи завтра в 10:00 по МСК и отправляйся в новое путешествие!\n"
-                                        + "Или нажми здесь, чтобы узнать другие способы исследовать планету GG-265"
+                                        + "Или пополнись в клубе, чтобы продолжать исследовать планету GG-265"
                             ) }
                     }
 

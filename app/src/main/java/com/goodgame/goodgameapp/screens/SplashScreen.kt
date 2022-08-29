@@ -26,6 +26,8 @@ import com.goodgame.goodgameapp.screens.views.LogoView
 import com.goodgame.goodgameapp.screens.views.TopImage
 import com.goodgame.goodgameapp.viewmodel.GameViewModel
 import com.goodgame.goodgameapp.viewmodel.LoginViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 enum class SplashScreenState {
     WAIT_RESPONSE,
@@ -37,7 +39,7 @@ enum class SplashScreenState {
 }
 
 @Composable
-fun SplashScreen(navController: NavHostController, viewModel : GameViewModel) {
+fun SplashScreen(navController: NavHostController,viewModel : GameViewModel) {
 
     SplashScreenGraphics()
 
@@ -48,6 +50,7 @@ fun SplashScreen(navController: NavHostController, viewModel : GameViewModel) {
     val lifecycleOwner = LocalLifecycleOwner.current
     val refreshKey = remember { mutableStateOf(true)}
     fun MutableState<Boolean>.trigger() { value = !value } // refreshKey trigger
+    val coroutineScope = rememberCoroutineScope()
 
 //    navController.navigate(Screen.CharacterCreationScreen.route)
     LaunchedEffect(refreshKey.value) {
@@ -99,9 +102,7 @@ fun SplashScreen(navController: NavHostController, viewModel : GameViewModel) {
                     clearBackStack(navController, this)
                 }
             else
-                navController.navigate(Screen.MainScreen.route) {
-                    clearBackStack(navController, this)
-                }
+                navController.navigate(Screen.MainScreen.route)
         }
         SplashScreenState.WAIT_RESPONSE -> {
 

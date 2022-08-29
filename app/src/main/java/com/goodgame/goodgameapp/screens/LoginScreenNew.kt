@@ -3,15 +3,14 @@ package com.goodgame.goodgameapp.screens
 import android.graphics.Matrix
 import android.graphics.RectF
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -43,6 +42,8 @@ import com.goodgame.goodgameapp.R
 import com.goodgame.goodgameapp.models.ClubModel
 import com.goodgame.goodgameapp.navigation.Screen
 import com.goodgame.goodgameapp.retrofit.Status
+import com.goodgame.goodgameapp.screens.controls.Keyboard
+import com.goodgame.goodgameapp.screens.controls.keyboardAsState
 import com.goodgame.goodgameapp.screens.views.*
 import com.goodgame.goodgameapp.ui.theme.FocusBlue
 import com.goodgame.goodgameapp.ui.theme.FocusGreen
@@ -75,19 +76,21 @@ fun LoginScreenNew(navController: NavHostController, viewModel: LoginViewModel) 
 
     val loadingViewActive = remember {mutableStateOf(false)}
 
+    val scrollState = rememberScrollState()
+    val isKeyboardOpen by keyboardAsState()
     Column(modifier = Modifier
+        .fillMaxSize()
         .background(Color(0xff00131d))
     ) {
 
         Column() {
             Row() {
                 TopImage {
-                    Image(painterResource(R.drawable.white_logo),
-                        contentDescription = "Top logo")
+                    LogoView()
                 }
             }
-            Row (modifier = Modifier.padding(14.dp).weight(1f), verticalAlignment = Alignment.CenterVertically) {
-                Column()
+            Row (modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.verticalScroll(scrollState).padding(14.dp).padding(top = 30.dp))
                 {
 //                    Spacer(modifier = Modifier.padding(15.dp))
                     when(topTextState.value) {
@@ -110,7 +113,7 @@ fun LoginScreenNew(navController: NavHostController, viewModel: LoginViewModel) 
                         showClubListView.value = true
                     }
                     Spacer(modifier = Modifier.padding(15.dp))
-                    MetallButton(isActive = enterInAccountButtonActive, activeText = "Войти в аккаунт") { // Enter in account button
+                    MetallButton(isActive = enterInAccountButtonActive.value, activeText = "Войти в аккаунт") { // Enter in account button
                         loadingViewActive.value = true
                         viewModel.phoneNumber.value = phoneNumber.value
                         viewModel.club.value = currentClub.value
@@ -120,12 +123,14 @@ fun LoginScreenNew(navController: NavHostController, viewModel: LoginViewModel) 
                 }
 
             }
-            Row() {
-                BottomImage {
-                    IDontHaveAccount() {
-                        navController.navigate(Screen.RegistrationScreen.route)
+            Row(Modifier.weight(1f)) {}
+            Row {
+                if (isKeyboardOpen == Keyboard.Closed)
+                    BottomImage {
+                        IDontHaveAccount() {
+                            navController.navigate(Screen.RegistrationScreen.route)
+                        }
                     }
-                }
             }
 
         }

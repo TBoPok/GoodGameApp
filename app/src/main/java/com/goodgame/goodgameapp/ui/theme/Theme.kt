@@ -11,6 +11,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.TextStyle
+import com.google.accompanist.systemuicontroller.SystemUiController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 private val DarkColorPalette = darkColors(
@@ -24,9 +25,13 @@ private val DarkColorPalette = darkColors(
 )
 
 private val LightColorPalette = lightColors(
-    primary = Purple500,
-    primaryVariant = Purple700,
-    secondary = Teal200
+    primary = White,
+    onPrimary = Gray,
+    primaryVariant = Dark1,
+    secondary = Teal200,
+    background = DarkSurface,
+
+    onBackground = DarkOnBackground,
 
     /* Other default colors to override
     background = Color.White,
@@ -42,6 +47,8 @@ private val LightColorPalette = lightColors(
 fun GoodGameAppTheme(content: @Composable () -> Unit) {
     val colors = DarkColorPalette
     val systemUiController = rememberSystemUiController()
+    systemUiController.setStatusBarColor(Color(0xFF010101), darkIcons = false)
+    systemUiController.isStatusBarVisible = true // Status bar
     SideEffect {
         systemUiController.setNavigationBarColor(
             color = Dark1, //Your color

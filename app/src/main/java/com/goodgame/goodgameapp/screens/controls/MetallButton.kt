@@ -33,17 +33,17 @@ import androidx.compose.ui.unit.sp
 import com.goodgame.goodgameapp.R
 
 @Composable
-fun MetallButton(isActive: MutableState<Boolean>,
+fun MetallButton(isActive: Boolean,
                  activeText: String, notActiveText: String = activeText,
                  height : Dp = 63.dp,
                  onClick: () -> Unit) {
 
-    val backgroundActive = remember { mutableStateOf(isActive.value)}
+    val backgroundActive = remember { mutableStateOf(isActive)}
     val textColor = remember { mutableStateOf(Color.White)}
 
     val text = remember { mutableStateOf(notActiveText)}
 
-    if (isActive.value == true) {
+    if (isActive == true) {
         backgroundActive.value = true
         textColor.value = Color(0xFF010101)
         text.value = activeText
@@ -69,7 +69,7 @@ fun MetallButton(isActive: MutableState<Boolean>,
         )
         .background(Color.Transparent)
         .clickable {
-            if (isActive.value)
+            if (isActive)
                 onClick()
             else
                 Toast
@@ -96,14 +96,5 @@ fun MetallButton(isActive: MutableState<Boolean>,
             color = textColor.value,
             style = MaterialTheme.typography.button
         )
-    }
-}
-
-@Preview
-@Composable
-fun ColorButtonPreview() {
-    val isActive = remember {mutableStateOf(true)}
-    MetallButton(isActive = isActive, "Продолжить") {
-        
     }
 }

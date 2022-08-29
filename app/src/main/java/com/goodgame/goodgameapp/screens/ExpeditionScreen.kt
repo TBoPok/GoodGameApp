@@ -72,7 +72,20 @@ private enum class ExpeditionScreenState {
     ERROR,
 }
 
-@OptIn(ExperimentalAnimationApi::class)
+private val MASS_TEST = true
+private val MASS_TEST_DESCRIPTION =
+        "Спасибо что участвуете в масс тесте. Через некоторое время" +
+        " здесь будет описание приключений Godji. А пока только эта заглушка, чтобы вам было интеренее" +
+        "играть. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque " +
+        "laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto " +
+        "beatae vitae dicta sunt explicabo."
+
+private val MASS_TEST_RESULT =
+    "А здесь будет результат экспедиции \n" +
+    "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque " +
+    "laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto " +
+    "beatae vitae dicta sunt explicabo."
+
 @Composable
 fun ExpeditionScreen(navController: NavController, viewModel: GameViewModel) {
     val expeditionState = remember { mutableStateOf(ExpeditionScreenState.LOADING_EXPEDITION)}
@@ -203,7 +216,7 @@ fun ExpeditionScreen(navController: NavController, viewModel: GameViewModel) {
                             }
                             Status.ERROR -> {
                                 expeditionState.value = ExpeditionScreenState.ERROR
-                                errorMessage.value = it.message ?: "Error loading image, no msg"
+                                errorMessage.value = it.message ?: "Error loading result, no msg"
                             }
                         }
                     }
@@ -217,7 +230,7 @@ fun ExpeditionScreen(navController: NavController, viewModel: GameViewModel) {
                         }
                         Status.ERROR -> {
                             expeditionState.value = ExpeditionScreenState.ERROR
-                            errorMessage.value = it.message ?: "Error loading image, no msg"
+                            errorMessage.value = it.message ?: "Error loading heroInfo, no msg"
                         }
                         Status.LOADING -> {
 
@@ -374,7 +387,7 @@ private fun ShowExpedition(
         item(){
             FadeTransitionFloat(state = openingAnimFloat.value, visibleState = 130f) {
                 Text(
-                    text = expedition.description,
+                    text = if (MASS_TEST) MASS_TEST_DESCRIPTION else expedition.description,
                     style = MaterialTheme.typography.subtitle2,
                     lineHeight = 19.sp,
                     color = Color(0xFFD1D1D1),
@@ -514,9 +527,10 @@ private fun ShowExpedition(
                                     }
                                 )
                             ) {
-
-                                loadingState.value = "Do"
-                                onAction("Do")
+                                if (expeditionResult == null) {
+                                    loadingState.value = "Do"
+                                    onAction("Do")
+                                }
                             }
                             Spacer(modifier = Modifier.height(15.dp))
                             ButtonBack(
@@ -530,9 +544,10 @@ private fun ShowExpedition(
                                     }
                                 )
                             ) {
-
-                                loadingState.value = "Run"
-                                onAction("Run")
+                                if (expeditionResult == null) {
+                                    loadingState.value = "Run"
+                                    onAction("Run")
+                                }
                             }
                         }
                     }
@@ -619,7 +634,7 @@ private fun ShowExpedition(
 
                 Spacer(modifier = Modifier.height(20.dp))
                 Text(
-                    text = expeditionResult.description,
+                    text = if (MASS_TEST) MASS_TEST_RESULT else expeditionResult.description,
                     style = MaterialTheme.typography.subtitle2,
                     lineHeight = 19.sp,
                     color = Color(0xFFD1D1D1),
@@ -648,7 +663,7 @@ private fun ShowExpedition(
                 )
                 Spacer(modifier = Modifier.height(15.dp))
                 MetallButton(
-                    isActive = remember { mutableStateOf(true) },
+                    isActive = true,
                     activeText = "Вернуться на базу"
                 ) {
                     onClose()

@@ -10,6 +10,7 @@ import com.goodgame.goodgameapp.download.DownloadUtil.download
 import com.goodgame.goodgameapp.models.*
 import com.goodgame.goodgameapp.retrofit.ApiHelper
 import com.goodgame.goodgameapp.retrofit.Response
+import com.goodgame.goodgameapp.retrofit.RetrofitBuilder
 import com.goodgame.goodgameapp.retrofit.Status
 import com.goodgame.goodgameapp.sharedprefs.SharedPrefs
 import com.google.android.exoplayer2.ExoPlayer
@@ -37,7 +38,7 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
 
     private val sharedPrefs = SharedPrefs(context = context, APP_PREFERENCES)
 
-    lateinit var apiInterface : ApiHelper
+    private val apiInterface = ApiHelper(RetrofitBuilder.apiService)
 
     var username : String? = null
 

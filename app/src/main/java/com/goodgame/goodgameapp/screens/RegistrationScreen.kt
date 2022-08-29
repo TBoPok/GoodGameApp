@@ -66,7 +66,7 @@ fun RegistrationScreen(navController: NavHostController, viewModel: LoginViewMod
                         showClubListView.value = true
                     }
                     Spacer(modifier = Modifier.padding(5.dp))
-                    MetallButton(isActive = enterInAccountButtonActive, activeText = "Перейти в чат") {
+                    MetallButton(isActive = enterInAccountButtonActive.value, activeText = "Перейти в чат") {
                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(currentClub.value!!.telegram_bot_url))
                         ContextCompat.startActivity(context, intent, null)
                         navController.navigateUp()

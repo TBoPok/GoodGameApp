@@ -3,9 +3,11 @@ package com.goodgame.goodgameapp.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -30,6 +32,8 @@ import androidx.navigation.NavController
 import com.goodgame.goodgameapp.R
 import com.goodgame.goodgameapp.navigation.Screen
 import com.goodgame.goodgameapp.retrofit.Status
+import com.goodgame.goodgameapp.screens.controls.Keyboard
+import com.goodgame.goodgameapp.screens.controls.keyboardAsState
 import com.goodgame.goodgameapp.screens.views.*
 import com.goodgame.goodgameapp.viewmodel.LoginViewModel
 
@@ -119,6 +123,8 @@ fun LoginCodeConfirmScreen (navController: NavController, viewModel: LoginViewMo
 fun CodeConfirmView (wrongKey : Boolean, done : (confirmCode : String) -> Unit) {
     val buttonActive = remember { mutableStateOf(false) }
     var confirmCode = remember { mutableStateOf("") }
+    val isKeyboardOpen by keyboardAsState()
+    val scrollState = rememberScrollState()
 
     buttonActive.value = confirmCode.value.length == 6
 
@@ -134,8 +140,8 @@ fun CodeConfirmView (wrongKey : Boolean, done : (confirmCode : String) -> Unit) 
             }
         }
         Row (modifier = Modifier.weight(1f)) {
-            Column(modifier = Modifier.padding(14.dp)) {
-                Spacer(modifier = Modifier.padding(top = 80.dp))
+            Column(modifier = Modifier.padding(14.dp).verticalScroll(scrollState)) {
+                Spacer(modifier = Modifier.padding(top = 65.dp))
                 Text(
                     text = "Осталось совсем немного",
                     style = MaterialTheme.typography.body1,
@@ -154,13 +160,14 @@ fun CodeConfirmView (wrongKey : Boolean, done : (confirmCode : String) -> Unit) 
                 Spacer(modifier = Modifier.padding(top = 55.dp))
                 CodeConfirmField(confirmCode)
                 Spacer(modifier = Modifier.padding(top = 15.dp))
-                MetallButton(isActive = buttonActive, activeText = "Продолжить") {
+                MetallButton(isActive = buttonActive.value, activeText = "Продолжить") {
                     done(confirmCode.value)
                 }
             }
         }
         Row (modifier = Modifier.fillMaxWidth()) {
-            BottomImage {}
+            if (isKeyboardOpen == Keyboard.Closed)
+                BottomImage {}
         }
     }
 
@@ -194,7 +201,14 @@ fun CodeConfirmField(confirmCode : MutableState<String>) {
                 cursorColor = Color(0xFF010101)),
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(topStart = 15.dp, topEnd = 15.dp, bottomStart = 15.dp, bottomEnd = 15.dp))
+                .clip(
+                    RoundedCornerShape(
+                        topStart = 15.dp,
+                        topEnd = 15.dp,
+                        bottomStart = 15.dp,
+                        bottomEnd = 15.dp
+                    )
+                )
                 .background(Color(red = 1f, green = 1f, blue = 1f, alpha = 1f)),
 
         )

@@ -157,7 +157,7 @@ fun CharacterCreationScreen(navController: NavController, viewModel: GameViewMod
             )
         }
         Row (modifier = Modifier.padding(horizontal = 30.dp, vertical = 12.dp)) { // ApprButton(isActive = mutableStateOf(true), activeText = "Выбрать его", height = 55.dp) {
-            MetallButton(isActive = mutableStateOf(true), activeText = "Выбрать его") {
+            MetallButton(isActive = true, activeText = "Выбрать его") {
                 loadingViewActive.value = true
                 chosenHeroType = characterTypes[pagerState.currentIndex].id_name
             }
@@ -260,7 +260,8 @@ private fun CharacterCard(characterModel: CharacterModel)
         val cardPaddingVertical = with(LocalDensity.current) {
             val Y2 = (cardSize.value.height - (cardSize.value.width / 0.57f))
             val Y1 = (Y2 / 2)
-            (Y1 + (cardSize.value.width / 0.57f) * 0.07f).toInt().toDp()
+            val result = (Y1 + (cardSize.value.width / 0.57f) * 0.07f).toInt().toDp()
+            if (result < 0.dp) 5.dp else result
         }
         if (cardSize.value != Size.Zero)
             Column (modifier = Modifier
@@ -407,8 +408,7 @@ private fun CharacterParameterScale(text: String, parameter: Int, @DrawableRes b
 
 
 @SuppressLint("UnrememberedMutableState")
-@OptIn(ExperimentalPagerApi::class)
-@Preview
+@Preview(widthDp = 300, heightDp = 280)
 @Composable
 private fun CreateCharPreview() {
     val pagerState = rememberPagerState()
@@ -483,7 +483,7 @@ private fun CreateCharPreview() {
             )
         }
         Row (modifier = Modifier.padding(horizontal = 20.dp, vertical = 7.dp)) { // Apply row
-            MetallButton(isActive = mutableStateOf(true), activeText = "Выбрать его", height = 55.dp) {
+            MetallButton(isActive = true, activeText = "Выбрать его", height = 55.dp) {
 
             }
         }
