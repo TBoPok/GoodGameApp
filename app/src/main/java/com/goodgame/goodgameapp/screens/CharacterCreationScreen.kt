@@ -326,7 +326,8 @@ private fun CharacterCardBack(characterModel: CharacterModel)
         val cardPaddingVertical = with(LocalDensity.current) {
             val Y2 = (cardSize.value.height - (cardSize.value.width / 0.57f))
             val Y1 = (Y2 / 2)
-            (Y1 + (cardSize.value.width / 0.57f) * 0.07f).toInt().toDp()
+            val result = (Y1 + (cardSize.value.width / 0.57f) * 0.07f).toInt().toDp()
+            if (result < 0.dp) 5.dp else result
         }
         if (cardSize.value != Size.Zero)
             Column (modifier = Modifier

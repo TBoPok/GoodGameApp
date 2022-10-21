@@ -32,8 +32,11 @@ import java.lang.Exception
 import java.net.UnknownHostException
 
 @Composable
-fun ErrorAlert(errorMessage : String,
+fun ErrorAlert(headText: String = "Что-то пошло не так",
+               errorMessage : String,
+               cancelText : String = "Отмена",
                isRefreshActive : Boolean = true,
+               isRefreshExists: Boolean = true,
                refresh : () -> Unit = { },
                cancel : () -> Unit) {
 
@@ -48,7 +51,7 @@ fun ErrorAlert(errorMessage : String,
                 .background(Color.White)) {
             Column(Modifier.padding(vertical = 20.dp, horizontal = 20.dp)) {
                 Text(
-                    text = "Что-то пошло не так",
+                    text = headText,
                     style = MaterialTheme.typography.h1,
                     fontSize = 25.sp,
                     color = Color(0xFF010101),
@@ -64,14 +67,20 @@ fun ErrorAlert(errorMessage : String,
                 Spacer(modifier = Modifier.height(15.dp))
                 Row () {
                     Box(Modifier.weight(0.35f)) {
-                        CancelButton(isActive = remember {mutableStateOf(true)}, height = 55.dp) {
+                        CancelButton(text = cancelText, isActive = remember {mutableStateOf(true)}, height = 55.dp) {
                             cancel()
                         }
                     }
-                    Spacer(modifier = Modifier.width(15.dp))
-                    Box(Modifier.weight(0.65f)) {
-                        ApplyButton(isActive = remember {mutableStateOf(isRefreshActive)}, height = 55.dp, activeText = "Повторить") {
-                            refresh()
+                    if (isRefreshExists) {
+                        Spacer(modifier = Modifier.width(15.dp))
+                        Box(Modifier.weight(0.65f)) {
+                            ApplyButton(
+                                isActive = remember { mutableStateOf(isRefreshActive) },
+                                height = 55.dp,
+                                activeText = "Повторить"
+                            ) {
+                                refresh()
+                            }
                         }
                     }
                 }
@@ -81,7 +90,7 @@ fun ErrorAlert(errorMessage : String,
 
 }
 @Composable
-private fun CancelButton(isActive: MutableState<Boolean>, height: Dp, onClick: () -> Unit) {
+private fun CancelButton(text: String, isActive: MutableState<Boolean>, height: Dp, onClick: () -> Unit) {
     Box (modifier = Modifier
         .fillMaxWidth()
         .height(height)
@@ -99,7 +108,7 @@ private fun CancelButton(isActive: MutableState<Boolean>, height: Dp, onClick: (
         },
         contentAlignment = Alignment.Center) {
         Text(
-            text = "Отмена",
+            text = text,
             textAlign = TextAlign.Center,
             fontSize = 15.sp,
             textDecoration = TextDecoration.None,

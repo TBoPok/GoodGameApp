@@ -1,6 +1,7 @@
 package com.goodgame.goodgameapp.screens
 
 import androidx.compose.foundation.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
@@ -48,6 +49,12 @@ fun MainScreen(navController: NavController, viewModel: GameViewModel) {
 
     val heroInfo by viewModel.heroInfo.observeAsState()
     var exitAccountPopUp by remember { mutableStateOf(false)}
+
+    if (heroInfo?.stats == null) {
+        navController.navigate(Screen.SplashScreen.route) {
+            navController.backQueue.clear()
+        }
+    }
 
     BackPressedTimer()
 
@@ -213,10 +220,14 @@ fun ExperienceGraphics(heroInfo: HeroInfo?, onClick: () -> Unit = {}) {
             start = (lvlImgSize.value.width * 0.43f).toInt().toDp(),
             end = (lvlNextImgSize.value.width * 0.68f).toInt().toDp())
     }
+    val interactionSource = remember { MutableInteractionSource() }
     Box(
         Modifier
             .fillMaxWidth()
-            .clickable { onClick() }, contentAlignment = Alignment.Center) {
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null
+            ) { onClick() }, contentAlignment = Alignment.Center) {
         Box (modifier = Modifier
             .fillMaxHeight(0.65f)
             .fillMaxWidth()

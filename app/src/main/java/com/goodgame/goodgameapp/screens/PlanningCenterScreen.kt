@@ -37,6 +37,11 @@ import kotlin.random.Random
 fun PlanningCenterScreen(navController: NavController, viewModel: GameViewModel) {
     val scrollState = rememberScrollState()
     val heroInfo by viewModel.heroInfo.observeAsState()
+    if (heroInfo?.stats == null) {
+        navController.navigate(Screen.SplashScreen.route) {
+            navController.backQueue.clear()
+        }
+    }
 
     val isExpeditionsListActive = remember {mutableStateOf(false)}
 

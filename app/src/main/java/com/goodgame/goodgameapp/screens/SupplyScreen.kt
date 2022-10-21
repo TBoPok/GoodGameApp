@@ -40,6 +40,7 @@ import com.goodgame.goodgameapp.R
 import com.goodgame.goodgameapp.models.HeroInfo
 import com.goodgame.goodgameapp.models.Reward
 import com.goodgame.goodgameapp.models.ShopItem
+import com.goodgame.goodgameapp.navigation.Screen
 import com.goodgame.goodgameapp.pager.Pager
 import com.goodgame.goodgameapp.pager.PagerState
 import com.goodgame.goodgameapp.retrofit.Response
@@ -57,6 +58,12 @@ import kotlin.coroutines.CoroutineContext
 @Composable
 fun SupplyScreen(navController: NavController, viewModel: GameViewModel, initTab: Int = 0) {
     val heroInfo by viewModel.heroInfo.observeAsState()
+
+    if (heroInfo?.stats == null) {
+        navController.navigate(Screen.SplashScreen.route) {
+            navController.backQueue.clear()
+        }
+    }
 
     val howToActivateActive = remember { mutableStateOf(false)}
     val howToGetCoinsView = remember { mutableStateOf(false)}
@@ -278,7 +285,9 @@ fun ShopList(
             Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 3.dp)) {
-            MetallButton(isActive = isItemChosen.value, height = 55.dp, activeText = "Вот это мне заверните, пожалуйста") {
+            MetallButton(isActive = isItemChosen.value,
+                toastText = "Выберите приз",
+                height = 55.dp, activeText = "Вот это мне заверните, пожалуйста") {
                 val chosenItem = shopItems.find {it.id == chosenItem.value}
                 if (chosenItem != null)
                     buyClick(chosenItem)

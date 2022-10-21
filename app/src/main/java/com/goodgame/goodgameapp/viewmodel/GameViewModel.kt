@@ -59,15 +59,12 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
         expedition_passed = false
     ))
 
-    private var getToken : String = "0"
-        get() {
-            if (field == "0")
-                field = getToken()
-            return field
-        }
+    private var token = "0"
 
-    private fun getToken () : String {
-        return sharedPrefs.getPref<String>(TOKEN) ?: "0"
+    private fun getToken() : String {
+        if (token == "0")
+            token = sharedPrefs.getPref<String>(TOKEN) ?: "0"
+        return token
     }
 
     fun checkToken() : LiveData<Response<TokenConfirmResponse>> {
@@ -106,7 +103,7 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
         heroInfo.value?.lvl_exp              = sharedPrefs.getPref<Int>(LAST_EXP) ?: 0
         heroInfo.value?.next_lvl_need        = sharedPrefs.getPref<Int>(LAST_EXP_TO_NXT_LVL) ?: 0
         heroInfo.value?.heroClass            = sharedPrefs.getPref<String>(LAST_CLASS) ?: ""
-        heroInfo.value?.total_progress = sharedPrefs.getPref<Int>(EXPED_COMPLETED) ?: 0
+        heroInfo.value?.total_progress       = sharedPrefs.getPref<Int>(EXPED_COMPLETED) ?: 0
     }
 
     private fun saveLastHeroData() {
@@ -151,7 +148,7 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
         return liveData(Dispatchers.Default) {
             emit(Response.loading(data = null))
             try {
-                emit(Response.success(data = apiInterface.setHeroSkill(getToken, skill_type)))
+                emit(Response.success(data = apiInterface.setHeroSkill(getToken(), skill_type)))
             } catch (exception: Exception) {
                 emit(Response.error(data = null, message = exception.message ?: "Error Occurred!"))
             }
@@ -181,7 +178,7 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
         return liveData(Dispatchers.Default) {
             emit(Response.loading(data = null))
             try {
-                emit(Response.success(data = apiInterface.buyShopItem(getToken, shopItem.id)))
+                emit(Response.success(data = apiInterface.buyShopItem(getToken(), shopItem.id)))
             } catch (exception: Exception) {
                 emit(Response.error(data = null, message = exception.message ?: "Error Occurred!"))
             }
@@ -192,7 +189,7 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
         return liveData {
             emit(Response.loading(data = null))
             try {
-                val rewardResponse = apiInterface.getRewards(getToken)
+                val rewardResponse = apiInterface.getRewards(getToken())
                 if (rewardResponse.status)
                     emit(Response.success(data = rewardResponse.rewards))
                 else
@@ -255,7 +252,7 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
         return liveData(Dispatchers.Default) {
             emit(Response.loading(data = null))
             try {
-                emit(Response.success(data = apiInterface.getExpedition(getToken)))
+                emit(Response.success(data = apiInterface.getExpedition(getToken())))
             } catch (exception: Exception) {
                 emit(Response.error(data = null, message = exception.message ?: "Error Occurred!"))
             }
@@ -267,7 +264,7 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
             liveData(Dispatchers.Default) {
                 emit(Response.loading(data = null))
                 try {
-                    emit(Response.success(data = apiInterface.getExpeditionResult(getToken, choice)))
+                    emit(Response.success(data = apiInterface.getExpeditionResult(getToken(), choice)))
                 } catch (exception: Exception) {
                     emit(Response.error(data = null, message = exception.message ?: "Error Occurred!"))
                 }
@@ -278,6 +275,7 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
 
     fun exitAccount () {
         sharedPrefs.setPref(TOKEN, "0")
+        token = "0"
     }
 
 }

@@ -65,7 +65,7 @@ class MainActivity : ComponentActivity() {
 
     private fun adjustFontScale2(configuration: Configuration) {
         if (configuration.smallestScreenWidthDp <= 400) configuration.fontScale = 1.0f
-        else configuration.fontScale = 1.2f
+        else configuration.fontScale = 1.15f
 
     }
 

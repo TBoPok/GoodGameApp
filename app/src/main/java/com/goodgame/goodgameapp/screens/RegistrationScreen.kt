@@ -2,6 +2,7 @@ package com.goodgame.goodgameapp.screens
 
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -66,7 +67,9 @@ fun RegistrationScreen(navController: NavHostController, viewModel: LoginViewMod
                         showClubListView.value = true
                     }
                     Spacer(modifier = Modifier.padding(5.dp))
-                    MetallButton(isActive = enterInAccountButtonActive.value, activeText = "Перейти в чат") {
+                    MetallButton(isActive = enterInAccountButtonActive.value,
+                        toastText = "Выберите клуб",
+                        activeText = "Перейти в чат") {
                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(currentClub.value!!.telegram_bot_url))
                         ContextCompat.startActivity(context, intent, null)
                         navController.navigateUp()

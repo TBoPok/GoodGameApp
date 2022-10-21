@@ -5,6 +5,8 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -49,11 +51,20 @@ fun ExpeditionsListView(viewModel: GameViewModel, closeEvent: () -> Unit) {
         listOf(Color(0xFF000000), Color(0xFF333C3F)),
         end = Offset(x = 0f, y = 0f),
         start = Offset(x = Offset.Infinite.x / 20, y = Offset.Infinite.y / 3))
-    Column (modifier = Modifier.padding(14.dp)) {
+    val interactionSource = remember { MutableInteractionSource() }
+    Column (modifier = Modifier
+        .padding(14.dp)
+        .clickable(
+        interactionSource = interactionSource,
+        indication = null
+    ) {
+        /* .... */
+    }) {
         Row(
             modifier = Modifier
                 .weight(1f)
-                .background(Color.Transparent)) {
+                .background(Color.Transparent)
+        ) {
             CloseRow(closeEvent = {closeEvent()})
         }
         Row(modifier = Modifier.weight(8f))

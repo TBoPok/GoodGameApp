@@ -72,7 +72,7 @@ private enum class ExpeditionScreenState {
     ERROR,
 }
 
-private val MASS_TEST = true
+private val MASS_TEST = false
 private val MASS_TEST_DESCRIPTION =
         "Спасибо что участвуете в масс тесте. Через некоторое время" +
         " здесь будет описание приключений Godji. А пока только эта заглушка, чтобы вам было интеренее" +
@@ -91,11 +91,17 @@ fun ExpeditionScreen(navController: NavController, viewModel: GameViewModel) {
     val expeditionState = remember { mutableStateOf(ExpeditionScreenState.LOADING_EXPEDITION)}
     val errorMessage = remember { mutableStateOf("")}
     val loadingProgress = remember { mutableStateOf(0)}
-    val heroInfo by viewModel.heroInfo.observeAsState()
     val expedition = remember { mutableStateOf<Expedition?> (null)}
     val expeditionResultBuf = remember { mutableStateOf<ExpeditionResult?> (null)}
     val expeditionResult = remember { mutableStateOf<ExpeditionResult?> (null)}
     val userAction = remember { mutableStateOf("")}
+
+    val heroInfo by viewModel.heroInfo.observeAsState()
+    if (heroInfo?.stats == null) {
+        navController.navigate(Screen.SplashScreen.route) {
+            navController.backQueue.clear()
+        }
+    }
 
     FadeTransition(state = expeditionState, visibleStates =
         listOf(
@@ -138,13 +144,26 @@ fun ExpeditionScreen(navController: NavController, viewModel: GameViewModel) {
                 modifier = Modifier.fillMaxSize()
             )
         }
-        ErrorAlert(
-            errorMessage = errorMessage.value,
-            isRefreshActive = true,
-            cancel = { navController.navigateUp() },
-            refresh = {
-                expeditionState.value = ExpeditionScreenState.LOADING_EXPEDITION
-            })
+
+        if (errorMessage.value.substring(0,11) != "Поздравляем") {
+            ErrorAlert(
+                errorMessage = errorMessage.value,
+                isRefreshActive = true,
+                cancel = { navController.navigateUp() },
+                refresh = {
+                    expeditionState.value = ExpeditionScreenState.LOADING_EXPEDITION
+                })
+        } else {
+            ErrorAlert(
+                headText = "Ура!",
+                errorMessage = errorMessage.value,
+                cancelText = "Хорошо",
+                isRefreshExists = false,
+                isRefreshActive = false,
+                cancel = { navController.navigateUp() },
+                )
+        }
+
     }
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -161,6 +180,7 @@ fun ExpeditionScreen(navController: NavController, viewModel: GameViewModel) {
                                 expeditionState.value = ExpeditionScreenState.LOADING_IMAGE
                             } else {
                                 expeditionState.value = ExpeditionScreenState.ERROR
+                                Log.d("expedition", it.data?.info ?: "info null")
                                 errorMessage.value = it.data?.info
                                     ?: "Error no msg getExpedition, data.status = false"
                             }

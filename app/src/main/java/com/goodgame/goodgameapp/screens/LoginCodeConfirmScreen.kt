@@ -160,7 +160,9 @@ fun CodeConfirmView (wrongKey : Boolean, done : (confirmCode : String) -> Unit) 
                 Spacer(modifier = Modifier.padding(top = 55.dp))
                 CodeConfirmField(confirmCode)
                 Spacer(modifier = Modifier.padding(top = 15.dp))
-                MetallButton(isActive = buttonActive.value, activeText = "Продолжить") {
+                MetallButton(isActive = buttonActive.value,
+                    toastText = "Введите код подтверждения",
+                    activeText = "Продолжить") {
                     done(confirmCode.value)
                 }
             }

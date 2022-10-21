@@ -113,7 +113,9 @@ fun LoginScreenNew(navController: NavHostController, viewModel: LoginViewModel) 
                         showClubListView.value = true
                     }
                     Spacer(modifier = Modifier.padding(15.dp))
-                    MetallButton(isActive = enterInAccountButtonActive.value, activeText = "Войти в аккаунт") { // Enter in account button
+                    MetallButton(isActive = enterInAccountButtonActive.value,
+                        toastText = "Заполните все поля",
+                        activeText = "Войти в аккаунт") { // Enter in account button
                         loadingViewActive.value = true
                         viewModel.phoneNumber.value = phoneNumber.value
                         viewModel.club.value = currentClub.value

@@ -9,6 +9,8 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -100,12 +102,18 @@ fun ExpeditionCompletedView(expedition: ExpeditionStoryModel, closeEvent: () -> 
         showView = true
     }
 
-
+    val interactionSource = remember { MutableInteractionSource() }
     Box(
         Modifier
             .fillMaxSize()
             .alpha(if (showView) 1f else 0f)
-            .padding(15.dp)) {
+            .padding(15.dp)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null
+            ) {
+                /* .... */
+            }) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -328,7 +336,7 @@ private fun HasExpPoints(points: Int) {
             Modifier
                 .background(Color(0xFF0077FF))) {
             Row (modifier = Modifier.height(35.dp)) {
-                Text(text = "вам доступны очки исследования",
+                Text(text = "вам доступны очки навыков",
                     style = MaterialTheme.typography.button,
                     color = Color(0xFFFFFFFF),
                     textAlign = TextAlign.Center,

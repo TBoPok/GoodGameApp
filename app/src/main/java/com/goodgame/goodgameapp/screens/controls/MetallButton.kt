@@ -35,6 +35,7 @@ import com.goodgame.goodgameapp.R
 @Composable
 fun MetallButton(isActive: Boolean,
                  activeText: String, notActiveText: String = activeText,
+                 toastText: String = "",
                  height : Dp = 63.dp,
                  onClick: () -> Unit) {
 
@@ -71,9 +72,9 @@ fun MetallButton(isActive: Boolean,
         .clickable {
             if (isActive)
                 onClick()
-            else
+            else if (toastText != "")
                 Toast
-                    .makeText(context, "Заполните все поля", Toast.LENGTH_SHORT)
+                    .makeText(context, toastText, Toast.LENGTH_SHORT)
                     .show()
         },
         contentAlignment = Alignment.Center) {
