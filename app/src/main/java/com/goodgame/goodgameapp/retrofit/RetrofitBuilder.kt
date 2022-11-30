@@ -23,7 +23,9 @@ interface ApiInterface {
 
     @FormUrlEncoded
     @POST("login/token")
-    suspend fun sendToken(@Field("private_key") private_key : String) : TokenConfirmResponse
+    suspend fun sendToken(
+        @Field("private_key") private_key : String,
+        @Field("version") version : String) : TokenConfirmResponse
 
     @FormUrlEncoded
     @POST("hero/info")
@@ -94,8 +96,8 @@ class ApiHelper(private val apiService: ApiInterface) {
         club_id = confirmCodeModel.club_id
     )
 
-    suspend fun sendToken(token : String) =
-        apiService.sendToken(private_key = token)
+    suspend fun sendToken(token : String, version : String) =
+        apiService.sendToken(private_key = token, version = version)
 
     suspend fun getHeroInfo(token : String) =
         apiService.getHeroInfo(private_key = token)

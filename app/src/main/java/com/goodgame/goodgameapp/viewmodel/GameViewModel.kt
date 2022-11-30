@@ -13,6 +13,7 @@ import com.goodgame.goodgameapp.retrofit.Response
 import com.goodgame.goodgameapp.retrofit.RetrofitBuilder
 import com.goodgame.goodgameapp.retrofit.Status
 import com.goodgame.goodgameapp.sharedprefs.SharedPrefs
+import com.google.android.exoplayer2.BuildConfig
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
@@ -77,7 +78,7 @@ class GameViewModel (application: Application) : AndroidViewModel(application) {
         return liveData(Dispatchers.Default) {
             emit(Response.loading(data = null))
             try {
-                emit(Response.success(data = apiInterface.sendToken(token = token)))
+                emit(Response.success(data = apiInterface.sendToken(token = token, version = com.goodgame.goodgameapp.BuildConfig.VERSION_CODE.toString())))
             } catch (exception: Exception) {
                 emit(Response.error(data = null, message = exception.message ?: "Error Occurred!"))
             }
